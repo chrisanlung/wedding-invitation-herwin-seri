@@ -69,7 +69,14 @@
   /* teks */
   --ink:       #F7F1EA;   /* teks utama */
   --muted:     #DFC9C0;   /* teks sekunder */
-  --olive:     #CBAB9D;   /* label kecil */
+  /* Label kecil. Dinaikkan dari #CBAB9D setelah latar bergambar dipasang:
+     .eyebrow adalah teks TERKECIL di desain ini (11px) dan letaknya di
+     puncak tiap section - tepat di bagian gambar yang paling banyak
+     hiasannya. Terukur di atas piksel paling terang di baliknya, #CBAB9D
+     hanya 2,9-3,4:1. Menaikkan tabir sampai lolos butuh 0,87, dan pada
+     kepekatan itu gambarnya praktis tak terlihat lagi - jadi yang dinaikkan
+     warnanya, bukan tabirnya. Sekarang 4,9-5,8:1. */
+  --olive:     #E6D1C7;   /* label kecil */
   --cream:     #F1E7DC;   /* teks di atas section pekat */
   --cream-2:   #E7D2BE;   /* teks di atas foto */
 
@@ -115,6 +122,11 @@
   --pad-x: 1.6875rem;
 
   --safe-b: env(safe-area-inset-bottom, 0px);
+
+  /* Kepekatan tabir section tanpa foto. Satu nilai untuk semua ukuran:
+     dengan --olive yang sudah dinaikkan, 0,75 lolos di HP maupun desktop,
+     dan lebih tipis dari ini gambarnya lebih terlihat. */
+  --tabir: .75;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -223,13 +235,23 @@ img { max-width: 100%; display: block; height: auto; }
    gambarnya gagal dimuat.
 
    Halaman pembuka TIDAK terpengaruh: .gate punya latar gradasinya sendiri
-   yang pekat, jadi ia menutupi lapisan ini. */
+   yang pekat, jadi ia menutupi lapisan ini.
+
+   DUA BERKAS, BUKAN SATU YANG DIREGANGKAN. Gambar desktop mendatar
+   (1672x940, rasio 1,78); dipakai di layar HP yang tegak (rasio ~0,52),
+   `cover` akan memotong kiri-kanannya habis dan justru hiasan sudutnya yang
+   hilang - tersisa bidang polos. background_mobile.webp digambar tegak
+   (941x1672) dengan hiasannya di atas dan bawah, tempat yang memang terlihat
+   di layar HP.
+
+   Yang dasar = versi HP, mengikuti cara berkas ini disusun (mobile-first);
+   versi mendatar dipasang di blok 760px. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: url("/assets/img/background_1.webp") center center / cover no-repeat;
+  background: url("/assets/img/background_mobile.webp") center center / cover no-repeat;
   pointer-events: none;
 }
 
@@ -292,9 +314,13 @@ a:hover { color: var(--accent-dk); }
    Angkanya bukan tebakan: 0.70 adalah titik di mana teks utama di atas
    bagian gambar YANG PALING TERANG (garis bunga di sudut) masih 5,8-7,7:1,
    sementara di bagian rata mencapai 12-15:1. */
-.screen--gold              { background: rgba(90, 24, 40, .70); }
-.screen--alt.screen--gold  { background: rgba(61, 14, 26, .70); }
-.screen--dark.screen--gold { background: rgba(44, 9, 18, .76); }
+/* Kepekatannya lewat --tabir (lihat :root). Gambar latar HP punya rangkaian
+   bunga terang di puncak dan dasarnya, dan gambar desktop punya hiasan sudut
+   yang di layar 1920x1080 ikut menjangkau baris eyebrow - keduanya kasus yang
+   sama, jadi satu nilai cukup. */
+.screen--gold              { background: rgb(90 24 40 / var(--tabir)); }
+.screen--alt.screen--gold  { background: rgb(61 14 26 / var(--tabir)); }
+.screen--dark.screen--gold { background: rgb(44 9 18 / calc(var(--tabir) + .06)); }
 
 /* Tetap dipertahankan walau lapisan ::before sudah tidak ada: beberapa
    section punya hiasan berposisi absolut, dan aturan ini menjaga isinya
@@ -1886,6 +1912,10 @@ select.input {
   /* 20.625rem / (420/524) = 25.73rem tinggi. Supaya sisi pria setinggi itu
      juga: 25.73 x (900/1061) = 21.81rem. Tanpa ini namanya beda 22px. */
   .portrait--male { width: min(100%, 21.8125rem); }
+
+  /* Latar bergambar versi mendatar. Hanya gambarnya yang ditukar - posisi,
+     ukuran, dan sifat fixed-nya sudah benar dari aturan dasar. */
+  body::before { background-image: url("/assets/img/background_1.webp"); }
 
   /* Susunan acara: semuanya dilonggarkan, gambarnya jadi hampir dua kali
      tinggi HP. Tiga baris x ~11.9rem + jarak masih di bawah ruang yang
