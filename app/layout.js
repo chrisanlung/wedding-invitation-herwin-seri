@@ -68,7 +68,7 @@ export default function RootLayout({ children }) {
                Dibatalkan di sini. */
             html.is-locked .shell *,
             html.is-locked .cupid,
-            html.is-locked .cupid__img { animation-play-state: running !important; }
+            html.is-locked .cupid__strip { animation-play-state: running !important; }
           `}</style>
         </noscript>
       </head>

@@ -69,11 +69,11 @@ export default function Gate() {
             menambah kebisingan bagi pembaca layar. */}
         <img
           className="gate__logo"
-          src="/assets/img/logo-hs-2.webp"
+          src="/assets/img/logo-hs-3.webp"
           alt=""
           aria-hidden="true"
           width="360"
-          height="356"
+          height="360"
         />
 
         <p className="eyebrow">Undangan Pernikahan</p>

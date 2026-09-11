@@ -186,7 +186,7 @@ html.is-locked, body.is-locked { overflow: hidden; height: 100%; }
    dari posisi terakhir tanpa meloncat. */
 html.is-locked .shell *,
 html.is-locked .cupid,
-html.is-locked .cupid__img {
+html.is-locked .cupid__strip {
   animation-play-state: paused;
 }
 
@@ -1234,10 +1234,111 @@ select.input {
   will-change: transform;
 }
 
-.cupid__img {
+/* Jendela selebar SATU frame. Rasionya rasio frame (180x176), bukan rasio
+   strip - kalau keliru, kupidnya gepeng. */
+.cupid__win {
+  display: block;
   width: 100%;
-  height: auto;
-  filter: drop-shadow(0 0.625rem 1.125rem rgba(0, 0, 0, .45));
+  aspect-ratio: 180 / 176;
+  overflow: hidden;
+}
+
+.cupid__strip {
+  display: block;
+  width: 1600%;           /* enam belas frame berjajar */
+  /* Wajib: aturan dasar `img { max-width: 100% }` akan memampatkan strip jadi
+     selebar jendelanya dan keenambelas frame tampil berdesakan. */
+  max-width: none;
+  /* 200ms per frame - lihat catatan di @keyframes cupidFlap untuk susunan
+     urutannya. Lama satu siklus mengikuti jumlah frame di urutan itu, jadi
+     kalau urutannya diubah, angka detik di sini harus ikut. */
+  animation: cupidFlap 12.8s step-end infinite;
+}
+/* Urutan frame kupid. DIBUAT OTOMATIS - jangan disunting satu per satu.
+
+   Frame 1-12 adalah kupid TERBANG (sayap mengepak, mata berkedip, panah
+   masih di busur). Frame 13-16 adalah TEMBAKAN: panah lepas, busur kosong,
+   lalu pulih.
+
+   Sebelumnya keenambelas frame diputar berurutan terus-menerus, jadi
+   panahnya lepas tiap 3,2 detik - terlalu sering untuk hiasan yang hanya
+   melintas di latar. Sekarang bagian terbangnya diulang 5 kali dulu, baru
+   sekali menembak: panahnya lepas tiap 12.8 detik.
+
+   Karena urutannya tidak lagi lurus 0..15, steps() tidak bisa dipakai -
+   steps() hanya bisa membagi rata satu rentang. Tiap frame ditulis sebagai
+   keyframe sendiri dengan step-end, jadi nilainya ditahan sampai keyframe
+   berikutnya.
+
+   Mau mengubahnya? Ubah ULANG (berapa kali terbang sebelum menembak) atau MS
+   (lama tiap frame) di skrip pembuatnya, lalu tempel ulang blok ini.
+   Parameter saat ini: 12 frame terbang x 5 ulangan + 4 frame tembakan,
+   200ms per frame = 12.8 detik satu siklus. */
+@keyframes cupidFlap {
+  0% { transform: translate3d(-0%, 0, 0); }
+  1.5625% { transform: translate3d(-6.25%, 0, 0); }
+  3.125% { transform: translate3d(-12.5%, 0, 0); }
+  4.6875% { transform: translate3d(-18.75%, 0, 0); }
+  6.25% { transform: translate3d(-25%, 0, 0); }
+  7.8125% { transform: translate3d(-31.25%, 0, 0); }
+  9.375% { transform: translate3d(-37.5%, 0, 0); }
+  10.9375% { transform: translate3d(-43.75%, 0, 0); }
+  12.5% { transform: translate3d(-50%, 0, 0); }
+  14.0625% { transform: translate3d(-56.25%, 0, 0); }
+  15.625% { transform: translate3d(-62.5%, 0, 0); }
+  17.1875% { transform: translate3d(-68.75%, 0, 0); }
+  18.75% { transform: translate3d(-0%, 0, 0); }
+  20.3125% { transform: translate3d(-6.25%, 0, 0); }
+  21.875% { transform: translate3d(-12.5%, 0, 0); }
+  23.4375% { transform: translate3d(-18.75%, 0, 0); }
+  25% { transform: translate3d(-25%, 0, 0); }
+  26.5625% { transform: translate3d(-31.25%, 0, 0); }
+  28.125% { transform: translate3d(-37.5%, 0, 0); }
+  29.6875% { transform: translate3d(-43.75%, 0, 0); }
+  31.25% { transform: translate3d(-50%, 0, 0); }
+  32.8125% { transform: translate3d(-56.25%, 0, 0); }
+  34.375% { transform: translate3d(-62.5%, 0, 0); }
+  35.9375% { transform: translate3d(-68.75%, 0, 0); }
+  37.5% { transform: translate3d(-0%, 0, 0); }
+  39.0625% { transform: translate3d(-6.25%, 0, 0); }
+  40.625% { transform: translate3d(-12.5%, 0, 0); }
+  42.1875% { transform: translate3d(-18.75%, 0, 0); }
+  43.75% { transform: translate3d(-25%, 0, 0); }
+  45.3125% { transform: translate3d(-31.25%, 0, 0); }
+  46.875% { transform: translate3d(-37.5%, 0, 0); }
+  48.4375% { transform: translate3d(-43.75%, 0, 0); }
+  50% { transform: translate3d(-50%, 0, 0); }
+  51.5625% { transform: translate3d(-56.25%, 0, 0); }
+  53.125% { transform: translate3d(-62.5%, 0, 0); }
+  54.6875% { transform: translate3d(-68.75%, 0, 0); }
+  56.25% { transform: translate3d(-0%, 0, 0); }
+  57.8125% { transform: translate3d(-6.25%, 0, 0); }
+  59.375% { transform: translate3d(-12.5%, 0, 0); }
+  60.9375% { transform: translate3d(-18.75%, 0, 0); }
+  62.5% { transform: translate3d(-25%, 0, 0); }
+  64.0625% { transform: translate3d(-31.25%, 0, 0); }
+  65.625% { transform: translate3d(-37.5%, 0, 0); }
+  67.1875% { transform: translate3d(-43.75%, 0, 0); }
+  68.75% { transform: translate3d(-50%, 0, 0); }
+  70.3125% { transform: translate3d(-56.25%, 0, 0); }
+  71.875% { transform: translate3d(-62.5%, 0, 0); }
+  73.4375% { transform: translate3d(-68.75%, 0, 0); }
+  75% { transform: translate3d(-0%, 0, 0); }
+  76.5625% { transform: translate3d(-6.25%, 0, 0); }
+  78.125% { transform: translate3d(-12.5%, 0, 0); }
+  79.6875% { transform: translate3d(-18.75%, 0, 0); }
+  81.25% { transform: translate3d(-25%, 0, 0); }
+  82.8125% { transform: translate3d(-31.25%, 0, 0); }
+  84.375% { transform: translate3d(-37.5%, 0, 0); }
+  85.9375% { transform: translate3d(-43.75%, 0, 0); }
+  87.5% { transform: translate3d(-50%, 0, 0); }
+  89.0625% { transform: translate3d(-56.25%, 0, 0); }
+  90.625% { transform: translate3d(-62.5%, 0, 0); }
+  92.1875% { transform: translate3d(-68.75%, 0, 0); }
+  93.75% { transform: translate3d(-75%, 0, 0); }
+  95.3125% { transform: translate3d(-81.25%, 0, 0); }
+  96.875% { transform: translate3d(-87.5%, 0, 0); }
+  98.4375% { transform: translate3d(-93.75%, 0, 0); }
 }
 
 /* Cupid pertama: agak besar, menghadap kanan. */
@@ -1246,7 +1347,7 @@ select.input {
   transform: translate3d(3vw, 55vh, 0);
   animation: cupidRoamA 42s ease-in-out infinite;
 }
-.cupid--a .cupid__img { animation: cupidBob 3.2s ease-in-out infinite; }
+
 
 /* Cupid kedua: lebih kecil dan sedikit pudar supaya terasa lebih jauh,
    gambarnya dicerminkan agar menghadap kiri. */
@@ -1256,18 +1357,10 @@ select.input {
   transform: translate3d(86vw, 24vh, 0);
   animation: cupidRoamB 55s ease-in-out infinite;
 }
-.cupid--b .cupid__img { animation: cupidBobFlip 3.9s ease-in-out infinite; }
-
-/* Kepakan kecil. Pencerminan ikut ditulis di dalam keyframe-nya supaya tidak
-   saling menimpa dengan transform jalur terbang di elemen induk. */
-@keyframes cupidBob {
-  0%, 100% { transform: translateY(-0.3125rem) rotate(-3deg); }
-  50%      { transform: translateY(0.3125rem)  rotate(3deg); }
-}
-@keyframes cupidBobFlip {
-  0%, 100% { transform: translateY(-0.25rem) rotate(3deg)  scaleX(-1); }
-  50%      { transform: translateY(0.25rem)  rotate(-3deg) scaleX(-1); }
-}
+/* Yang kedua menghadap kiri. Pencerminan dipasang di .cupid__win - bukan di
+   .cupid yang transform-nya dipakai jalur terbang, dan bukan di .cupid__strip
+   yang transform-nya dipakai kepakan. */
+.cupid--b .cupid__win { transform: scaleX(-1); }
 
 /* Jalur berkeliling. Keyframe 0% dan 100% sengaja sama supaya loop-nya mulus.
    ease-in-out bikin cupid seolah melambat sejenak di tiap titik belok. */
@@ -1607,8 +1700,13 @@ select.input {
 /* Geserannya px ter-clamp, bukan persen: persen membuat pohon terdorong
    terlalu jauh keluar layar di monitor lebar (sampai 200px tak terlihat),
    sementara di HP justru kurang menepi dan menabrak teks. */
-.deco--tree-l { left: -8.5rem; }
-.deco--tree-r { right: -8.5rem; transform: scaleX(-1); }
+/* -10.5rem, bukan -8.5rem. Blok teks gerbang selebar 88-302px di layar
+   390px; dengan -8.5rem tepi kanan pohon kiri berada di 106px, jadi 17px
+   masuk ke dalam blok teks - cukup untuk membuat huruf pertama tanggal
+   jatuh di dedaunan. Digeser 2rem lagi, tepinya mundur ke 73px dan teks
+   bebas dengan sisa 15px. */
+.deco--tree-l { left: -10.5rem; }
+.deco--tree-r { right: -10.5rem; transform: scaleX(-1); }
 
 /* Semak bunga di kedua sudut bawah - lapisan paling depan.
 
@@ -1877,8 +1975,11 @@ select.input {
   .deco--bush-l { left: -8rem; }
   .deco--bush-r { right: -8rem; }
   .deco--bed { height: 13rem; }
-  /* Ruang di atas monogram jauh lebih lega, jadi merpatinya kembali penuh. */
-  .doves    { --dove-y: 1; }
+  /* Pengali ketinggian TIDAK diubah di sini. Sempat dicoba 1 dan 0.78, dan
+     keduanya membuat merpati terbesar melintas menutupi 18-21% luas logo di
+     tengah siklusnya - karena posisi logo ikut tinggi isi gerbang, yang
+     berbeda-beda tiap ukuran layar. Nilai 0.42 dari blok dasar terukur bersih
+     di 390x745, 1440x900, dan 1920x1080. */
   .dove--a  { width: 7rem; }
   .dove--b  { width: 5.25rem; }
   .dove--c  { width: 4rem; }
