@@ -1,0 +1,1423 @@
+/* =========================================================================
+   Undangan Pernikahan Herwin & Seri - gaya lengkap.
+
+   Disalin apa adanya dari proyek statis sebelumnya: hampir setiap angka di
+   sini hasil pengukuran (tinggi section, kontras teks, sudut putaran kartu,
+   sambungan galeri), jadi jangan diubah tanpa mengukur ulang.
+
+   Satu-satunya yang berbeda: alamat gambar. Dulu CSS ada di assets/css/
+   sehingga menulis "../img/...", sekarang berkas statis dilayani Next.js
+   dari /assets/...
+   ========================================================================= */
+
+/* =========================================================================
+   Undangan Pernikahan Herwin & Seri
+   Mobile-first. Semua ukuran memakai clamp() supaya luwes dari 320px ke atas.
+   ========================================================================= */
+
+:root {
+  --page:      #E3D9C8;   /* latar di luar kartu */
+  --card:      #F6F1E9;   /* latar kartu */
+  --alt:       #EFE7DA;   /* latar section selang-seling */
+  --dark:      #3E362E;   /* section gelap */
+  --ink:       #3E362E;   /* teks utama */
+  --muted:     #6B6157;   /* teks sekunder */
+  --olive:     #8C8B6F;   /* label kecil */
+  --accent:    #A9765C;
+  --accent-dk: #8A5B45;
+  --cream:     #DCCEB9;
+  --cream-2:   #E7D2BE;
+  --line:      #DCCEB9;
+  --line-2:    #E0D3BF;
+  /* Kuning emas latar. Diambil dari foto sampulnya sendiri (median piksel
+     emas di page-1: #C18E41), jadi warnanya sewarna hiasan di foto itu -
+     bukan emas tebakan yang belum tentu cocok. */
+  --gold:      #C18E41;
+
+  /* Lebar maksimum ISI. Latar, foto, dan pita gelap tetap selebar layar. */
+  --content-w: 1120px;
+
+  /* --font-serif / --font-sans datang dari next/font (lihat app/layout.js).
+     Daftar cadangannya tetap ditulis: kalau berkas hurufnya belum termuat,
+     teksnya tampil dengan huruf sistem yang bentuknya paling mendekati,
+     bukan huruf bawaan yang merusak tata letak. */
+  --serif: var(--font-serif), Georgia, "Times New Roman", serif;
+  --sans:  var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* jarak dalam section — ikut lebar layar */
+  --pad-y: clamp(30px, 7vw, 72px);
+  --pad-x: clamp(22px, 7vw, 38px);
+
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Satu section = satu halaman, jadi snap-nya tegas. Ganti ke `proximity`
+     kalau ingin scroll yang lebih bebas. */
+  scroll-snap-type: y mandatory;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;              /* jaring pengaman: tak pernah geser ke samping */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Kunci scroll selama sampul pembuka masih tampil. */
+html.is-locked, body.is-locked { overflow: hidden; height: 100%; }
+
+img { max-width: 100%; display: block; }
+
+/* Semua gambar hiasan: murni dekoratif, tak pernah menghalangi sentuhan. */
+.deco { pointer-events: none; user-select: none; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-dk); }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* =========================== KARTU / KERANGKA ============================ */
+
+.shell {
+  width: 100%;
+  background: var(--card);
+  position: relative;
+  /* clip, BUKAN hidden — lihat catatan "Efek paralaks" di bawah. */
+  overflow: clip;
+}
+
+/* Tiap section = satu halaman penuh, isinya dipusatkan tegak lurus.
+   min-height (bukan height) supaya isi yang terlanjur tinggi tetap bisa
+   memanjang alih-alih terpotong. */
+.screen {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--pad-y) var(--pad-x);
+  scroll-snap-align: start;
+  overflow: clip;
+}
+
+/* Latar kuning emas untuk section yang TIDAK punya foto latar (semuanya
+   kecuali Cover, Hitung mundur, dan Penutup). Dipasang sebagai lapisan
+   transparan 50%, bukan warna baru, supaya warna dasar tiap section masih
+   terbaca di baliknya - section selang-seling tetap terlihat berselang.
+
+   Anak-anak section dibuat `position: relative` supaya terlukis DI ATAS
+   lapisan ini. Tanpa itu, isi yang bukan elemen berposisi (blok biasa)
+   dilukis lebih dulu daripada ::before yang berposisi absolut, jadi malah
+   tertutup emasnya. */
+.screen--gold::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gold);
+  opacity: .5;
+  pointer-events: none;
+}
+.screen--gold > * { position: relative; }
+
+/* Warna teks sekunder disesuaikan, HANYA di dalam section beremas.
+
+   Warna-warna ini dipilih dulu untuk latar krem terang; di atas emas mereka
+   jatuh jauh - eyebrow cuma 1,75:1, label kolom isian 1,88:1 (ambang 4,5:1).
+   Yang diubah variabelnya, bukan tiap aturan: variabel diwariskan ke seluruh
+   isi section, jadi satu tempat ini menutup semua pemakainya, dan di luar
+   section beremas nilainya sama sekali tak berubah.
+
+   Rona dan kejenuhan warna aslinya dipertahankan; hanya kecerahannya yang
+   digeser sampai kontrasnya lewat ambang dengan sisa. Jadi masih keluarga
+   warna yang sama, bukan warna asing di palet. Arahnya selalu menambah
+   kontras, jadi pemakai lain (teks di atas kartu putih, tombol) ikut aman. */
+.screen--gold,
+.gate {
+  --olive:  #474638;    /* dari #8C8B6F - eyebrow, label kolom isian */
+  --muted:  #4B443D;    /* dari #6B6157 - paragraf pengantar, isi ucapan */
+  --accent: #5B3F30;    /* dari #A9765C - kutipan ayat, tanda &, tombol */
+  --cream:  #F1ECE4;    /* dari #DCCEB9 - eyebrow di section gelap beremas */
+}
+
+.screen--center { text-align: center; }
+.screen--alt    { background: var(--alt); }
+.screen--dark   { background: var(--dark); color: var(--card); }
+
+.screen--cover {
+  min-height: 100vh;
+  min-height: 100svh;              /* tak ikut lompat saat bar browser muncul/hilang */
+  padding: 0;                      /* padding pindah ke .cover__layer */
+}
+
+/* Kerudung setempat di belakang teks sampul.
+
+   Kerudung selayar penuh (.scrim--cover) tidak cukup begitu latarnya jadi FOTO:
+   teksnya duduk di ketinggian yang berbeda-beda tergantung layar (mulai 40%
+   tinggi layar di desktop, 60% di HP), jadi satu gradasi tetap selalu salah di
+   salah satu ukuran - diukur 1,43:1 di desktop, jauh di bawah ambang 4,5:1.
+
+   Kerudung ini menempel pada blok teksnya sendiri, jadi ia ikut ke mana pun
+   teksnya jatuh. Bentuknya elips yang memudar ke bening di tepinya supaya
+   fotonya tidak terpotong kotak - dari jauh tak terlihat sebagai lapisan.
+
+   Tanpa z-index negatif: ::before itu anak pertama, dan anak-anak teksnya
+   dibuat `position: relative`, jadi teksnya dilukis sesudahnya = di atasnya.
+   z-index negatif berisiko tenggelam ke belakang foto kalau .fadeUp kebetulan
+   sedang membentuk konteks penumpukan (saat animasinya jalan). */
+.screen--cover .fadeUp { position: relative; }
+.screen--cover .fadeUp::before {
+  content: "";
+  position: absolute;
+  /* Kotaknya sengaja jauh lebih besar dari teksnya. Gradasi hanya dilukis di
+     dalam kotak elemennya: kalau jari-jarinya dibuat melebihi kotak supaya
+     bagian tengahnya datar, yang memudar justru terpotong tepi kotak dan
+     muncul GARIS LURUS di atas-bawah kerudung. Jadi jari-jarinya dibiarkan
+     pas di kotak (`closest-side`), dan kotaknya yang dibesarkan - dengan
+     begitu teksnya duduk di bagian dalam yang masih pekat, sedangkan yang
+     memudar sampai bening ada jauh di luar teks. */
+  inset: -36% -42% -36%;
+  background: radial-gradient(ellipse closest-side at 50% 50%,
+              rgba(46, 39, 32, .92) 0%,
+              rgba(46, 39, 32, .87) 46%,
+              rgba(46, 39, 32, .68) 70%,
+              rgba(46, 39, 32, .26) 88%,
+              rgba(46, 39, 32, 0) 100%);
+  pointer-events: none;
+}
+.screen--cover .fadeUp > * { position: relative; }
+
+/* Lapisan teks sampul dibuat setinggi penuh section, supaya rentang
+   paralaksnya mencakup seluruh layar pertama - bukan cuma setinggi teksnya. */
+.cover__layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  text-align: center;
+  padding: 0 clamp(24px, 7vw, 34px) clamp(40px, 11vw, 58px);
+}
+
+.screen--closing { padding-block: clamp(80px, 22vw, 104px); color: var(--card); }
+.screen--gallery { padding-inline: clamp(16px, 5vw, 26px); }
+
+.screen__body { position: relative; }
+
+/* Section selebar layar, tapi isinya dibatasi supaya baris teks tetap enak
+   dibaca di monitor lebar. Pembungkus paralaks sekalian jadi wadahnya. */
+[data-px] {
+  /* width:100% wajib. Section kini flex-column, dan margin-inline:auto pada
+     flex item membatalkan stretch - tanpa ini isinya menyusut selebar
+     kontennya saja dan baris kartu di desktop runtuh jadi satu kolom. */
+  width: 100%;
+  max-width: var(--content-w);
+  margin-inline: auto;
+}
+
+/* ============================ GAMBAR / LATAR ============================= */
+
+.media { position: relative; overflow: clip; }
+
+.media--fill { position: absolute; inset: 0; }
+.media--faint { opacity: .24; }
+
+.media__layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -15%;
+  height: 130%;                    /* ruang lebih: digeser +-10% pun tak menyisakan celah */
+  will-change: transform;
+}
+
+.media--fill img,
+.media__layer img { width: 100%; height: 100%; object-fit: cover; }
+
+.scrim { position: absolute; inset: 0; pointer-events: none; }
+.scrim--cover {
+  background: linear-gradient(to bottom,
+    rgba(62, 54, 46, .34) 0%,
+    rgba(62, 54, 46, .12) 34%,
+    rgba(62, 54, 46, .62) 76%,
+    rgba(62, 54, 46, .82) 100%);
+}
+.scrim--solid { background: rgba(62, 54, 46, .62); }
+
+/* ============================== TIPOGRAFI =============================== */
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: clamp(10px, 2.8vw, 11px);
+  letter-spacing: .34em;
+  text-transform: uppercase;
+  color: var(--olive);
+}
+.eyebrow--light { color: rgba(246, 241, 233, .9); letter-spacing: .42em; }
+.eyebrow--cream { color: var(--cream); }
+
+.title {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(29px, 8.5vw, 35px);
+  line-height: 1.15;
+}
+.title--center { text-align: center; margin-bottom: 30px; }
+
+.lead {
+  margin: 14px auto 0;
+  max-width: 30ch;
+  font-size: clamp(13px, 3.6vw, 14px);
+  line-height: 1.85;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.lead--tight { margin-bottom: 36px; }
+
+.head { text-align: center; margin-bottom: clamp(32px, 9vw, 46px); }
+
+.rule { width: 34px; height: 1px; background: var(--line); margin: 18px auto; }
+.rule--light { width: 54px; background: rgba(246, 241, 233, .6); margin: clamp(18px, 5vw, 26px) auto; }
+
+.amp {
+  display: block;
+  font-style: italic;
+  font-size: .54em;
+  margin: 6px 0;
+  color: var(--cream-2);
+}
+.amp--inline { display: inline; font-size: 1em; margin: 0; }
+
+.tag {
+  margin: 0 0 12px;
+  font-size: clamp(9px, 2.6vw, 10px);
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* ================================ COVER ================================= */
+
+.cover__names {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(46px, 15.5vw, 68px);
+  line-height: .98;
+  color: var(--card);
+}
+.cover__date {
+  margin: 0;
+  font-size: clamp(12px, 3.6vw, 14px);
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--card);
+}
+.cover__hint {
+  margin: clamp(20px, 6vw, 28px) 0 0;
+  font-size: clamp(10px, 2.8vw, 11px);
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: rgba(246, 241, 233, .72);
+  animation: bob 2.4s ease-in-out infinite;
+}
+
+/* ================================ AYAT ================================== */
+
+.deco--swag {
+  width: clamp(170px, 52vw, 300px);
+  margin: 0 auto clamp(22px, 6vw, 30px);
+  opacity: .92;
+}
+.deco--dove {
+  width: clamp(68px, 19vw, 104px);
+  margin: 0 auto clamp(16px, 5vw, 24px);
+  filter: drop-shadow(0 6px 14px rgba(20, 16, 12, .35));
+}
+
+.verse {
+  margin: 0 auto;
+  max-width: 22ch;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(20px, 5.8vw, 24px);
+  line-height: 1.6;
+  color: #4A4038;
+  text-wrap: pretty;
+}
+.verse__ref {
+  margin: 22px 0 0;
+  font-size: clamp(10px, 2.8vw, 11px);
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* =============================== MEMPELAI =============================== */
+
+/* Berdampingan di SEMUA lebar. Ditumpuk ke bawah, bagian ini butuh ~1200px
+   dan tak mungkin muat satu layar HP. */
+.couple {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 3vw, 72px);
+  margin-top: clamp(20px, 6vw, 44px);
+}
+.couple__person { flex: 1 1 0; min-width: 0; }
+.couple__amp { flex: 0 0 auto; }
+
+/* Foto mempelai duduk DI BALIK bingkai bunga; posisi & ukuran lubangnya
+   diukur langsung dari berkas bingkainya, jadi fotonya pas di dalam elips. */
+.portrait {
+  position: relative;
+  width: min(100%, 268px);
+  aspect-ratio: 420 / 525;
+  margin: 0 auto 18px;
+}
+.portrait__photo {
+  position: absolute;
+  left: var(--hole-x);
+  top: var(--hole-y);
+  width: var(--hole-w);
+  height: var(--hole-h);
+  object-fit: cover;
+  border-radius: 50%;              /* lubang bingkainya elips */
+}
+.portrait__frame { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.portrait--male   { --hole-x: 17.9%; --hole-y: 15.2%; --hole-w: 63.6%; --hole-h: 66.3%; }
+.portrait--female { --hole-x: 20.7%; --hole-y: 16.0%; --hole-w: 58.6%; --hole-h: 64.9%; }
+
+.couple__name {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(22px, 6vw, 34px);
+}
+.couple__parents {
+  margin: 8px 0 0;
+  font-size: clamp(11px, 3vw, 13px);
+  line-height: 1.65;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.couple__amp {
+  margin: 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(26px, 7.5vw, 31px);
+  color: var(--accent);
+}
+
+/* ============================ HITUNG MUNDUR ============================= */
+
+.countdown {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(6px, 2.2vw, 10px);
+  max-width: 340px;
+  margin: clamp(24px, 7vw, 32px) auto 0;
+}
+.countdown__cell {
+  padding: clamp(12px, 4vw, 17px) clamp(2px, 1.5vw, 6px);
+  border: 1px solid rgba(246, 241, 233, .24);
+}
+.countdown__num {
+  display: block;
+  font-family: var(--serif);
+  font-size: clamp(24px, 7.5vw, 32px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.countdown__lbl {
+  display: block;
+  margin-top: 6px;
+  font-size: clamp(8px, 2.4vw, 9px);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+.countdown__done {
+  margin: 24px auto 0;
+  max-width: 30ch;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--cream);
+  text-wrap: pretty;
+}
+
+/* ============================ KARTU / DAFTAR ============================ */
+
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack--wide { gap: clamp(12px, 3vw, 26px); }
+.stack--left { text-align: left; }
+
+/* Deretan kartu mendatar: selalu satu kolom (kartunya sendiri sudah melebar),
+   dan lebarnya dibatasi supaya tak melar di monitor lebar. */
+.stack--rows { max-width: 560px; margin-inline: auto; }
+
+.card { background: var(--card); border: 1px solid var(--line-2); }
+/* Kartu acara mendatar: blok jam di kiri, dipisah garis, keterangan di kanan. */
+.card--event {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 4vw, 22px);
+  padding: clamp(14px, 4vw, 20px) clamp(14px, 4vw, 22px);
+  text-align: left;
+}
+.event__time {
+  flex: 0 0 auto;
+  margin: 0;
+  min-width: clamp(72px, 21vw, 96px);
+  padding-right: clamp(12px, 4vw, 22px);
+  border-right: 1px solid var(--line-2);
+  text-align: center;
+}
+.event__hour {
+  display: block;
+  font-family: var(--serif);
+  font-size: clamp(23px, 6.6vw, 30px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.event__unit {
+  display: block;
+  margin-top: 5px;
+  font-size: clamp(9px, 2.4vw, 10px);
+  letter-spacing: .22em;
+  color: var(--olive);
+}
+.event__body { flex: 1 1 auto; min-width: 0; }
+.event__body .tag { margin-bottom: 6px; }
+/* Kartu lokasi berlatar foto tempatnya sendiri.
+
+   Fotonya lewat `background-image`, bukan <img> di dalam kartu: begitu
+   dipasang sebagai elemen, ia ikut menambah tinggi kartu dan harus diberi
+   rasio sendiri - persis masalah peta tersemat yang sempat membuat halaman
+   ini melebihi satu layar. Sebagai latar, tingginya ditentukan kartunya.
+
+   Kedua fotonya kebetulan gelap (gereja saat senja, kafe malam hari), jadi
+   teks krem sudah terbaca di atasnya; kerudung di bawah ini untuk menjamin
+   bagian yang terang - langit senja, papan nama menyala - tetap aman. */
+.card--venue {
+  position: relative;
+  overflow: clip;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;   /* isi menepi ke bawah, tempat kerudung paling pekat */
+  min-height: clamp(150px, 24svh, 240px);
+  background-color: #2a211b;   /* terlihat kalau fotonya belum termuat */
+  background-size: cover;
+  background-position: center;
+  border-color: rgba(246, 241, 233, .26);
+  color: var(--card);
+  /* teks sekundernya dibalik jadi terang - di section ini variabelnya
+     sedang bernilai gelap karena latar emas */
+  --muted: rgba(246, 241, 233, .88);
+}
+
+.stack--wide .card--venue:nth-child(1) { background-image: url("/assets/img/places/gereja.webp"); }
+.stack--wide .card--venue:nth-child(2) { background-image: url("/assets/img/places/leviticus-11.webp"); }
+
+.card--venue::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top,
+              rgba(26, 20, 16, .93) 0%,
+              rgba(26, 20, 16, .89) 34%,
+              rgba(26, 20, 16, .72) 62%,
+              rgba(26, 20, 16, .34) 100%);
+}
+.card--venue > * { position: relative; }
+
+/* Tombolnya ikut dibuat terang. Tidak lewat var(--accent): nilai itu juga
+   dipakai untuk WARNA LATAR tombol saat disentuh, jadi kalau diterangkan,
+   latar dan teksnya sama-sama krem dan tulisannya hilang. */
+.card--venue .btn--ghost {
+  border-color: rgba(246, 241, 233, .78);
+  color: var(--card);
+}
+.card--venue .btn--ghost:hover {
+  background: var(--card);
+  color: var(--ink);
+}
+.card--bank  { padding: clamp(18px, 5vw, 24px); }
+.card__body  { padding: clamp(18px, 5vw, 22px) clamp(18px, 5vw, 22px) clamp(20px, 5.5vw, 24px); }
+
+/* (gaya .event__time untuk kartu mendatar ada di blok .card--event di atas) */
+.event__place { margin: 0; font-size: clamp(13px, 3.7vw, 14px); font-weight: 500; }
+.event__addr  { margin: 6px 0 0; font-size: clamp(12px, 3.4vw, 13px); line-height: 1.7; color: var(--muted); }
+.card__body .event__addr { margin-bottom: 18px; }
+
+.bank__num {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(23px, 6.8vw, 27px);
+  letter-spacing: .04em;
+  font-variant-numeric: tabular-nums;
+}
+.bank__name { margin: 6px 0 16px; font-size: 13px; color: var(--muted); }
+
+/* ============================== CERITA KAMI ============================= */
+
+/* Tiap cerita = satu kartu tinggi, berjajar tiga, berlatar foto pasangan.
+
+   Fotonya dipasang lewat `background-image`, BUKAN <img> tambahan di dalam
+   kartu. Alasannya animasi: teks kartu dipilih dengan `.timeline__item > *`,
+   jadi anak baru apa pun akan ikut disembunyikan selama kartunya berputar -
+   padahal fotonya justru harus terlihat, dialah wajah kartunya. Latar dan
+   `::before` tidak kena pemilih itu.
+
+   Fotonya juga ikut berputar bersama kartunya; di antara 90 dan 270 derajat
+   yang terlihat adalah punggungnya, jadi fotonya tampak bercermin sekejap.
+   Pada foto hal itu terbaca wajar - seperti kartu foto yang dibalik - beda
+   dengan teks yang langsung terlihat salah. Itu sebabnya teksnya tetap
+   disembunyikan sampai putarannya berhenti. */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(7px, 2vw, 20px);
+  align-items: stretch;
+}
+.timeline__item {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;       /* teks di bawah: di situ kerudungnya paling pekat */
+  /* min-height diikat ke tinggi layar: tanpa ini kartunya menyusut setinggi
+     teksnya saja - di desktop jadi melebar mendatar, bukan kartu tinggi. */
+  min-height: clamp(260px, 56svh, 560px);
+  /* warna dasar: yang terlihat kalau fotonya belum termuat, dan yang mengisi
+     sisa bingkai kalau rasio fotonya tak persis sama dengan kartunya */
+  background-color: #2a211b;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  border: 1px solid rgba(246, 241, 233, .17);
+  padding: clamp(14px, 3.2vw, 28px) clamp(9px, 2.4vw, 20px);
+  text-align: center;
+  position: relative;
+  overflow: clip;                  /* clip, bukan hidden - lihat catatan di README */
+}
+
+/* Titik potongnya digeser per foto. Di HP kartunya cuma ~107px, sedangkan
+   fotonya (sesudah diperbesar `cover`) selebar ~190px - jadi kira-kira
+   setengah lebarnya terpotong, dan posisi X itulah yang menentukan siapa yang
+   masih masuk bingkai. Angka di bawah dipilih dari perbandingan potongan
+   sungguhan: di situ kedua wajah tetap terlihat utuh.
+
+   Di layar lebar angka ini nyaris tak berpengaruh - di sana kartunya justru
+   sedikit lebih lebar dari rasio fotonya, jadi yang terpotong bagian atas
+   bawahnya, bukan kiri kanannya. */
+.timeline__item:nth-child(1) {
+  background-image: url("/assets/img/story/story-1.webp");
+  background-position: 40% center;
+}
+.timeline__item:nth-child(2) {
+  background-image: url("/assets/img/story/story-2.webp");
+  background-position: 50% center;
+}
+.timeline__item:nth-child(3) {
+  background-image: url("/assets/img/story/story-3.webp");
+  background-position: 45% center;
+}
+
+/* Kerudung gelap supaya teks krem tetap terbaca di atas foto. Paling pekat di
+   bawah (tempat teksnya) dan nyaris bening di atas, jadi wajah di bagian atas
+   foto tidak ikut tertutup. */
+.timeline__item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top,
+              rgba(26, 20, 16, .93) 0%,
+              rgba(26, 20, 16, .88) 30%,
+              rgba(26, 20, 16, .42) 52%,
+              rgba(26, 20, 16, .14) 72%,
+              rgba(26, 20, 16, .06) 100%);
+}
+
+/* Teksnya harus di ATAS kerudung. `position: relative` saja cukup - keduanya
+   sama-sama z-index auto, dan yang belakangan menang. */
+.timeline__item > * {
+  position: relative;
+}
+.timeline__year {
+  margin: 0 0 clamp(8px, 2.2vw, 16px);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(19px, 5.4vw, 32px);
+  line-height: 1;
+  color: var(--cream-2);
+}
+.timeline__head {
+  margin: 0 0 clamp(6px, 1.8vw, 12px);
+  font-size: clamp(11px, 3.1vw, 15px);
+  font-weight: 500;
+  line-height: 1.35;
+}
+.timeline__text {
+  margin: 0;
+  font-size: clamp(10px, 2.8vw, 13px);
+  line-height: 1.65;
+  color: rgba(246, 241, 233, .86);   /* dinaikkan dari .72: sekarang di atas foto */
+  text-wrap: pretty;
+  overflow-wrap: break-word;       /* kolomnya sempit di HP */
+}
+
+/* ================================ GALERI ================================ */
+
+/* Kartu foto berjalan perlahan dari kanan ke kiri; berhenti saat di-hover
+   (atau saat salah satu kartunya di-fokus lewat keyboard), dan fotonya
+   sedikit membesar. Melebar ke tepi layar supaya jalannya terasa menerus. */
+.gallery {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  overflow-x: clip;
+  overflow-y: visible;             /* bayangan kartu saat hover tak terpotong */
+  /* Ruang ekstra atas-bawah: kartu yang dimiringkan + digeser naik-turun
+     butuh tempat, kalau tidak sudutnya terpotong tepi section. */
+  padding-block: clamp(20px, 3.4vw, 34px);
+}
+
+.gallery__track {
+  display: flex;
+  width: max-content;
+  animation: galleryRun 48s linear infinite;
+}
+.gallery:hover .gallery__track,
+.gallery:focus-within .gallery__track { animation-play-state: paused; }
+
+/* Set foto digandakan, lalu digeser tepat -50% = persis satu set penuh.
+   Jarak antar kartu memakai margin-kanan, BUKAN gap: dengan gap, lebar track
+   jadi 2n kartu + (2n-1) jarak, sehingga -50% meleset setengah jarak dan
+   sambungannya tersentak tiap putaran. */
+@keyframes galleryRun {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Tiga lapis, masing-masing satu tugas - supaya tak saling menimpa:
+     .gallery__item   kotak posisi di dalam barisan (juga sasaran animasi
+                      muncul-bergantian, yang memakai transform sendiri)
+     .gallery__card   tampilan kartu + KEMIRINGAN dan geser naik-turun
+     .gallery__frame  pemotong, supaya foto yang membesar tak melewati bingkai */
+.gallery__item {
+  flex: 0 0 auto;
+  width: clamp(150px, 44vw, 280px);
+  margin: 0 clamp(10px, 2.4vw, 18px) 0 0;
+}
+
+.gallery__card {
+  background: #FFFCF7;
+  border: 1px solid var(--line-2);
+  /* bawah lebih tebal: proporsi foto polaroid */
+  padding: clamp(7px, 1.8vw, 10px) clamp(7px, 1.8vw, 10px) clamp(22px, 5vw, 34px);
+  box-shadow: 0 8px 20px rgba(62, 54, 46, .12);
+  transition: transform .55s cubic-bezier(.2, .7, .3, 1), box-shadow .5s ease;
+}
+.gallery__frame { display: block; overflow: hidden; }
+
+/* Kemiringan & naik-turun. Polanya berulang tiap 6 kartu (6n+1..6n+6) supaya
+   set kedua - yang cuma salinan - persis sama, jadi sambungan loop-nya tetap
+   tak terlihat. */
+.gallery__item:nth-child(6n+1) .gallery__card { transform: rotate(-2.4deg) translateY(7px); }
+.gallery__item:nth-child(6n+2) .gallery__card { transform: rotate(1.8deg)  translateY(-10px); }
+.gallery__item:nth-child(6n+3) .gallery__card { transform: rotate(-1.1deg) translateY(4px); }
+.gallery__item:nth-child(6n+4) .gallery__card { transform: rotate(2.6deg)  translateY(-7px); }
+.gallery__item:nth-child(6n+5) .gallery__card { transform: rotate(-1.9deg) translateY(9px); }
+.gallery__item:nth-child(6n+6) .gallery__card { transform: rotate(1.3deg)  translateY(-5px); }
+
+/* Saat disentuh: kartunya ditegakkan dan sedikit terangkat. Ditaruh SETELAH
+   aturan nth-child di atas - kekhususannya sama, jadi yang belakangan menang. */
+.gallery__item:hover .gallery__card {
+  transform: rotate(0deg) translateY(-10px);
+  box-shadow: 0 18px 34px rgba(62, 54, 46, .22);
+}
+.gallery__item img {
+  width: 100%;
+  /* height:auto WAJIB. Atribut height="560" di <img> berlaku sebagai
+     presentational hint; tanpa dibatalkan, tingginya terkunci 560px dan
+     aspect-ratio di bawah ini tak berpengaruh sama sekali. */
+  /* Tinggi diikat ke tinggi layar (svh), bukan rasio tetap: dengan rasio
+     tetap kartunya jadi mungil dan halaman terasa kosong, karena section ini
+     setinggi satu layar penuh. */
+  height: clamp(140px, 32svh, 300px);
+  object-fit: cover;
+  transition: transform .6s cubic-bezier(.2, .7, .3, 1);
+}
+.gallery__item:hover img { transform: scale(1.09); }
+
+/* ================================= RSVP ================================= */
+
+.form { display: flex; flex-direction: column; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field__label {
+  font-size: 10px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--olive);
+}
+
+.input {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;                 /* >=16px: cegah iOS auto-zoom saat fokus */
+  line-height: 1.5;
+  border-radius: 0;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.input:focus { border-color: var(--accent); }
+.input--area { resize: vertical; min-height: 104px; line-height: 1.7; }
+
+select.input {
+  background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%),
+                    linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position: calc(100% - 19px) calc(50% + 1px), calc(100% - 14px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 40px;
+}
+
+.form__note { margin: 4px 0 0; text-align: center; font-size: 12px; color: var(--olive); min-height: 1.2em; }
+.form__note--error { color: #A2503C; }
+
+/* ================================ UCAPAN ================================ */
+
+.wishes { display: flex; flex-direction: column; gap: 14px; }
+.wish { border-left: 1px solid var(--line); padding: 4px 0 4px 18px; }
+.wish__name { margin: 0 0 6px; font-size: 13px; font-weight: 500; }
+.wish__msg {
+  margin: 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(15px, 4.2vw, 16px);
+  line-height: 1.65;
+  color: var(--muted);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+/* =============================== PENUTUP ================================ */
+
+.closing__text {
+  margin: 0 auto 26px;
+  max-width: 28ch;
+  font-size: clamp(12px, 3.5vw, 13px);
+  line-height: 1.9;
+  color: rgba(246, 241, 233, .86);
+  text-wrap: pretty;
+}
+.closing__names { margin: 0; font-family: var(--serif); font-size: clamp(34px, 10vw, 44px); line-height: 1.1; }
+
+/* ================================ TOMBOL ================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;                /* target sentuh nyaman */
+  padding: 11px 22px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn--ghost:hover { background: var(--accent); color: var(--card); }
+.btn--solid { background: var(--accent); border-color: var(--accent); color: var(--card); }
+.btn--solid:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
+.btn--block { width: 100%; letter-spacing: .26em; }
+.btn--sm { padding: 9px 18px; font-size: 10px; }
+.btn[disabled] { opacity: .5; cursor: default; }
+
+/* ============================= TOMBOL MUSIK ============================= */
+
+.dock {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(18px + var(--safe-b));
+  z-index: 40;
+  pointer-events: none;
+}
+.dock__inner {
+  padding-inline: clamp(14px, 4vw, 44px);
+  display: flex;
+  justify-content: flex-end;
+}
+.musicBtn {
+  pointer-events: auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid rgba(169, 118, 92, .4);
+  background: rgba(246, 241, 233, .92);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--accent);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(62, 54, 46, .16);
+  display: grid;
+  place-items: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.musicBtn[disabled] { opacity: .45; cursor: default; }
+.musicBtn__icon { display: block; }
+.musicBtn.is-playing .musicBtn__icon { animation: spin 4.5s linear infinite; }
+
+/* ================================ CUPID ================================
+   Dua cupid melayang ke sana ke mari mengelilingi undangan. Gerakannya
+   berbasis WAKTU, bukan scroll - jadi tetap berkeliling walau pembaca diam.
+
+   Tiap cupid punya jalur, durasi, dan ukuran sendiri supaya tidak terlihat
+   kembar. Durasinya (42s dan 55s) sengaja bukan kelipatan satu sama lain,
+   jadi keduanya tak pernah "berbaris" seirama.
+
+   Semuanya animasi CSS biasa - tak perlu scroll-driven animation, jadi jalan
+   di semua browser tanpa fallback JavaScript. */
+
+.cupid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 35;                     /* di atas isi, di bawah tombol musik (40) */
+  pointer-events: none;
+  will-change: transform;
+}
+
+.cupid__img {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 10px 18px rgba(62, 54, 46, .22));
+}
+
+/* Cupid pertama: agak besar, menghadap kanan. */
+.cupid--a {
+  width: clamp(52px, 11vw, 96px);
+  transform: translate3d(3vw, 55vh, 0);
+  animation: cupidRoamA 42s ease-in-out infinite;
+}
+.cupid--a .cupid__img { animation: cupidBob 3.2s ease-in-out infinite; }
+
+/* Cupid kedua: lebih kecil dan sedikit pudar supaya terasa lebih jauh,
+   gambarnya dicerminkan agar menghadap kiri. */
+.cupid--b {
+  width: clamp(42px, 9vw, 78px);
+  opacity: .85;
+  transform: translate3d(86vw, 24vh, 0);
+  animation: cupidRoamB 55s ease-in-out infinite;
+}
+.cupid--b .cupid__img { animation: cupidBobFlip 3.9s ease-in-out infinite; }
+
+/* Kepakan kecil. Pencerminan ikut ditulis di dalam keyframe-nya supaya tidak
+   saling menimpa dengan transform jalur terbang di elemen induk. */
+@keyframes cupidBob {
+  0%, 100% { transform: translateY(-5px) rotate(-3deg); }
+  50%      { transform: translateY(5px)  rotate(3deg); }
+}
+@keyframes cupidBobFlip {
+  0%, 100% { transform: translateY(-4px) rotate(3deg)  scaleX(-1); }
+  50%      { transform: translateY(4px)  rotate(-3deg) scaleX(-1); }
+}
+
+/* Jalur berkeliling. Keyframe 0% dan 100% sengaja sama supaya loop-nya mulus.
+   ease-in-out bikin cupid seolah melambat sejenak di tiap titik belok. */
+@keyframes cupidRoamA {
+  0%   { transform: translate3d(3vw, 55vh, 0); }
+  12%  { transform: translate3d(16vw, 30vh, 0); }
+  24%  { transform: translate3d(40vw, 58vh, 0); }
+  36%  { transform: translate3d(20vw, 74vh, 0); }
+  48%  { transform: translate3d(52vw, 44vh, 0); }
+  60%  { transform: translate3d(76vw, 66vh, 0); }
+  72%  { transform: translate3d(58vw, 22vh, 0); }
+  84%  { transform: translate3d(28vw, 40vh, 0); }
+  100% { transform: translate3d(3vw, 55vh, 0); }
+}
+@keyframes cupidRoamB {
+  0%   { transform: translate3d(86vw, 24vh, 0); }
+  14%  { transform: translate3d(66vw, 50vh, 0); }
+  28%  { transform: translate3d(84vw, 70vh, 0); }
+  42%  { transform: translate3d(48vw, 30vh, 0); }
+  56%  { transform: translate3d(22vw, 56vh, 0); }
+  70%  { transform: translate3d(38vw, 76vh, 0); }
+  84%  { transform: translate3d(70vw, 34vh, 0); }
+  100% { transform: translate3d(86vw, 24vh, 0); }
+}
+
+/* ========================================================================
+   ANIMASI ISI SAAT BERGANTI HALAMAN
+
+   Paralaks menggeser seluruh isi halaman sebagai satu blok; bagian ini
+   memunculkan elemen-elemennya satu per satu begitu halaman jadi aktif.
+
+   Dua tingkat:
+     tingkat 1  anak langsung isi halaman (judul, hiasan, wadah kartu)
+     tingkat 2  butiran di dalamnya (kartu acara, foto galeri, kolom isian,
+                angka hitung mundur, ucapan)
+
+   Keadaan "tersembunyi" hanya berlaku kalau JavaScript hidup (.has-reveal).
+   Tanpa JS tak ada yang menyembunyikan isinya - halaman tetap terbaca.
+   ======================================================================== */
+
+.has-reveal .screen [data-px] > *,
+.has-reveal .screen .stack > *,
+.has-reveal .screen .timeline__item,
+.has-reveal .screen .gallery__item,
+.has-reveal .screen .countdown__cell,
+.has-reveal .screen .wish,
+.has-reveal .screen .field {
+  transition: opacity .6s ease, transform .72s cubic-bezier(.22, .72, .3, 1);
+}
+
+.has-reveal .screen:not(.is-active) [data-px] > * {
+  opacity: 0;
+  transform: translateY(26px);
+}
+.has-reveal .screen:not(.is-active) .stack > *,
+.has-reveal .screen:not(.is-active) .timeline__item,
+.has-reveal .screen:not(.is-active) .gallery__item,
+.has-reveal .screen:not(.is-active) .countdown__cell,
+.has-reveal .screen:not(.is-active) .wish,
+.has-reveal .screen:not(.is-active) .field {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.has-reveal .screen.is-active [data-px] > *,
+.has-reveal .screen.is-active .stack > *,
+.has-reveal .screen.is-active .timeline__item,
+.has-reveal .screen.is-active .gallery__item,
+.has-reveal .screen.is-active .countdown__cell,
+.has-reveal .screen.is-active .wish,
+.has-reveal .screen.is-active .field {
+  opacity: 1;
+  transform: none;
+}
+
+/* Tingkat 1: berjarak 110ms. */
+.has-reveal .screen.is-active [data-px] > *:nth-child(1) { transition-delay: 60ms; }
+.has-reveal .screen.is-active [data-px] > *:nth-child(2) { transition-delay: 170ms; }
+.has-reveal .screen.is-active [data-px] > *:nth-child(3) { transition-delay: 280ms; }
+.has-reveal .screen.is-active [data-px] > *:nth-child(4) { transition-delay: 390ms; }
+
+/* Tingkat 2: mulai setelah tingkat 1 jalan, berjarak 80ms. */
+.has-reveal .screen.is-active .stack > *:nth-child(1),
+.has-reveal .screen.is-active .timeline__item:nth-child(1),
+.has-reveal .screen.is-active .gallery__item:nth-child(1),
+.has-reveal .screen.is-active .countdown__cell:nth-child(1),
+.has-reveal .screen.is-active .wish:nth-child(1),
+.has-reveal .screen.is-active .field:nth-child(1) { transition-delay: 300ms; }
+
+.has-reveal .screen.is-active .stack > *:nth-child(2),
+.has-reveal .screen.is-active .timeline__item:nth-child(2),
+.has-reveal .screen.is-active .gallery__item:nth-child(2),
+.has-reveal .screen.is-active .countdown__cell:nth-child(2),
+.has-reveal .screen.is-active .wish:nth-child(2),
+.has-reveal .screen.is-active .field:nth-child(2) { transition-delay: 380ms; }
+
+.has-reveal .screen.is-active .stack > *:nth-child(3),
+.has-reveal .screen.is-active .timeline__item:nth-child(3),
+.has-reveal .screen.is-active .gallery__item:nth-child(3),
+.has-reveal .screen.is-active .countdown__cell:nth-child(3),
+.has-reveal .screen.is-active .wish:nth-child(3),
+.has-reveal .screen.is-active .field:nth-child(3) { transition-delay: 460ms; }
+
+.has-reveal .screen.is-active .gallery__item:nth-child(4),
+.has-reveal .screen.is-active .countdown__cell:nth-child(4),
+.has-reveal .screen.is-active .field:nth-child(4) { transition-delay: 540ms; }
+
+.has-reveal .screen.is-active .gallery__item:nth-child(5) { transition-delay: 620ms; }
+.has-reveal .screen.is-active .gallery__item:nth-child(6) { transition-delay: 700ms; }
+
+/* Halaman cover punya animasi masuk sendiri (fadeUp), jangan diganggu. */
+.has-reveal .screen--cover [data-px-cover] > * { opacity: 1; transform: none; }
+
+/* ===================== KARTU CERITA BERPUTAR ==========================
+   Kartu di bagian Cerita Kami berputar tiga kali penuh di sumbu Y lalu
+   berhenti menghadap depan; teksnya baru muncul SESUDAH putaran berhenti.
+
+   Menyembunyikan teks itu yang membuat putaran penuh mungkin. Kartunya cuma
+   satu bidang, jadi di antara 90 dan 270 derajat yang menghadap kita adalah
+   punggungnya - kalau teksnya ikut terlihat, ia terbaca terbalik seperti
+   cermin. Tanpa teks, punggung panel terlihat sama persis dengan depannya,
+   jadi tak ada yang janggal.
+
+   Berputar di sumbu Y juga tak pernah membuat kartunya lebih LEBAR dari
+   aslinya (lebarnya menyusut mengikuti cosinus sudut), jadi ujungnya tak
+   mungkin terpotong batas section.
+
+   Lajunya: nyaris tetap dan cepat di dua pertiga awal, lalu melambat berhenti
+   seperti roda yang kehabisan tenaga - bukan satu easing rata yang kaku. */
+
+@keyframes storySpin {
+  0% {
+    opacity: 0;
+    transform: perspective(1000px) translateZ(-380px) rotateY(-1080deg);
+    animation-timing-function: linear;
+  }
+  10% { opacity: 1; }
+  62% {
+    transform: perspective(1000px) translateZ(-120px) rotateY(-380deg);
+    animation-timing-function: cubic-bezier(.16, .66, .22, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1000px) translateZ(0) rotateY(0deg);
+  }
+}
+
+/* Teks muncul setelah kartunya diam. Selama putaran, `both` menahan keadaan
+   awal (transparan), jadi teksnya benar-benar tersembunyi dulu. */
+@keyframes storyText {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.has-reveal .screen.is-active .timeline__item {
+  animation: storySpin 1.2s linear both;
+}
+
+/* --spin-end = jeda kartu + lama putaran; teks menyusul tepat sesudahnya. */
+.has-reveal .screen.is-active .timeline__item:nth-child(1) { animation-delay: 80ms;  --spin-end: 1.28s; }
+.has-reveal .screen.is-active .timeline__item:nth-child(2) { animation-delay: 220ms; --spin-end: 1.42s; }
+.has-reveal .screen.is-active .timeline__item:nth-child(3) { animation-delay: 360ms; --spin-end: 1.56s; }
+
+.has-reveal .screen.is-active .timeline__item > * {
+  animation: storyText .5s ease both;
+  animation-delay: calc(var(--spin-end, 1.3s) + var(--baris, 0ms));
+}
+.has-reveal .screen.is-active .timeline__item > *:nth-child(2) { --baris: 80ms; }
+.has-reveal .screen.is-active .timeline__item > *:nth-child(3) { --baris: 160ms; }
+
+/* ============================ SAMPUL PEMBUKA ============================
+   Polos, memakai palet undangan. Gradien radialnya sangat halus - hanya
+   supaya bidangnya tidak terasa datar mati. */
+
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(28px, 8vw, 44px);
+  color: var(--ink);
+  /* Lapisan emas 50% DI DALAM tumpukan latar, bukan sebagai elemen tersendiri:
+     dengan begitu ia otomatis berada di bawah hiasan bunga dan teksnya -
+     bunganya tetap berwarna aslinya, tidak ikut terkena semu emas. */
+  background:
+    linear-gradient(rgba(193, 142, 65, .5), rgba(193, 142, 65, .5)),
+    radial-gradient(120% 90% at 50% 28%,
+              var(--card) 0%, var(--alt) 58%, var(--page) 100%);
+  overflow: clip;
+  transition: opacity .7s ease, transform .7s ease;
+}
+
+.gate__inner { position: relative; animation: fadeUp 1s ease both; z-index: 1; }
+
+/* Hiasan taman di halaman pembuka. clip supaya sudut bunga yang melewati
+   tepi tidak memunculkan scrollbar. */
+.gate__deco {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  pointer-events: none;
+}
+/* Pohon sakura mengapit kiri-kanan. Sengaja dibiarkan menjorok keluar tepi
+   supaya tidak memakan ruang teks di layar sempit, dan pangkalnya tertutup
+   hamparan bunga di bawah supaya terlihat tertanam. */
+.deco--tree { position: absolute; bottom: 12%; width: clamp(104px, 30vw, 300px); }
+/* Geserannya px ter-clamp, bukan persen: persen membuat pohon terdorong
+   terlalu jauh keluar layar di monitor lebar (sampai 200px tak terlihat),
+   sementara di HP justru kurang menepi dan menabrak teks. */
+.deco--tree-l { left: clamp(-96px, -14vw, -30px); }
+.deco--tree-r { right: clamp(-96px, -14vw, -30px); transform: scaleX(-1); }
+
+/* Semak bunga di kedua sudut bawah - lapisan paling depan. */
+.deco--bush { position: absolute; bottom: -2%; width: clamp(170px, 54vw, 420px); }
+.deco--bush-l { left: -10%; }
+.deco--bush-r { right: -10%; transform: scaleX(-1); }
+
+/* Hamparan bunga dipasang sebagai latar BERULANG, bukan <img>. Dengan
+   background-size: auto 100% gambarnya diskala ke tinggi pita lalu diulang ke
+   samping - jadi lebar dan tinggi bisa diatur terpisah, dan seluruh bunganya
+   tetap utuh (tidak terpotong seperti kalau pakai object-fit: cover). */
+.deco--bed {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: clamp(150px, 26vh, 260px);
+  /* DUA lapis dengan tinggi berbeda -> lebar ubinnya berbeda pula, sehingga
+     pengulangannya tidak pernah sejajar. Satu lapis saja terlihat jelas
+     berulang: tiga gundukan kembar dengan celah seragam di antaranya. */
+  background:
+    url("/assets/img/deco/flower-bed.webp") repeat-x center bottom / auto 100%,
+    url("/assets/img/deco/flower-bed.webp") repeat-x left bottom / auto 76%;
+}
+
+/* Layar pendek (HP diputar): hamparan bunga bawah akan menabrak tombol. */
+@media (max-height: 560px) {
+  .deco--bed { display: none; }
+}
+
+.gate__names {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(44px, 14.5vw, 64px);
+  line-height: 1;
+}
+.gate__names .amp { color: var(--accent); }
+
+.gate__date {
+  margin: clamp(18px, 5vw, 24px) 0 0;
+  font-size: clamp(11px, 3.2vw, 13px);
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.gate__to { margin-top: clamp(26px, 8vw, 36px); }
+.gate__toLabel {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--olive);
+}
+.gate__toName {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(21px, 6vw, 26px);
+  overflow-wrap: anywhere;
+}
+.gate__btn { margin-top: clamp(28px, 8vw, 38px); }
+
+.gate.is-closing { opacity: 0; transform: scale(1.06); pointer-events: none; }
+
+/* ========================================================================
+   EFEK PARALAKS
+
+   Tiga lapis kedalaman yang bergerak dengan kecepatan berbeda saat scroll:
+
+     [data-px-back]   foto latar   - paling lambat, terasa paling jauh
+     [data-px]        isi halaman  - hanyut naik, muncul & memudar di ujung
+     [data-px-cover]  teks sampul  - paling cepat, terangkat saat cover pergi
+
+   Semua gerakan murni geser (translate), tanpa perubahan skala.
+
+   PENTING: pembungkus mana pun di atas .screen harus overflow:clip, JANGAN
+   overflow:hidden. overflow:hidden membuat elemen jadi scroll container,
+   sehingga view() mengambilnya sebagai timeline dan progress mentok di 0%
+   - seluruh isi halaman jadi tidak terlihat.
+   ======================================================================== */
+
+/* Foto latar hanyut pelan berlawanan arah scroll. Lapisannya 130% tinggi dan
+   digeser ke atas 15%, jadi geseran +-10% tak pernah menyisakan celah. */
+@keyframes pxBack {
+  from { transform: translate3d(0, -10%, 0); }
+  to   { transform: translate3d(0,  10%, 0); }
+}
+
+/* Isi halaman hanyut naik dengan laju tetap; opacity hanya untuk ujung-ujungnya,
+   saat halaman memang sedang masuk atau sudah hampir keluar layar. */
+@keyframes pxContent {
+  0%   { opacity: 0; transform: translate3d(0,  52px, 0); }
+  18%  { opacity: 1; transform: translate3d(0,  33px, 0); }
+  82%  { opacity: 1; transform: translate3d(0, -33px, 0); }
+  100% { opacity: 0; transform: translate3d(0, -52px, 0); }
+}
+
+/* Teks sampul bergerak paling jauh, jadi foto di belakangnya terasa diam. */
+@keyframes pxCoverText {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to   { opacity: 0; transform: translate3d(0, -120px, 0); }
+}
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes bob    { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
+@keyframes spin   { to { transform: rotate(360deg); } }
+
+/* Jalur utama: animasi digerakkan langsung oleh scroll.
+   Browser tanpa dukungan memakai fallback JS di main.js. */
+@supports (animation-timeline: view()) {
+  [data-px]       { animation: pxContent   linear both; animation-timeline: view(); }
+  [data-px-back]  { animation: pxBack      linear both; animation-timeline: view(); }
+  [data-px-cover] { animation: pxCoverText linear both; animation-timeline: view(); animation-range: exit 0% exit 85%; }
+}
+
+/* ============================== LAYAR LEBAR ============================= */
+
+@media (min-width: 760px) {
+  :root {
+    /* Isi sudah dipusatkan tegak lurus, jadi padding tegak cukup jadi jarak
+       aman minimum. Kalau dibiarkan selega dulu (132px), Susunan Acara dan
+       RSVP tak muat satu layar di laptop 900px. */
+    --pad-y: clamp(36px, 3.5vw, 64px);
+    --pad-x: clamp(38px, 5vw, 80px);
+  }
+  .head { margin-bottom: clamp(20px, 3vw, 36px); }
+
+  .screen--gallery { padding-inline: clamp(28px, 4vw, 64px); }
+  .cover__layer    { padding: 0 clamp(38px, 5vw, 80px) clamp(56px, 7vw, 96px); }
+
+  /* Tipografi naik satu tingkat supaya tidak tenggelam di layar lebar. */
+  .title          { font-size: clamp(35px, 3.6vw, 52px); }
+  .lead           { font-size: 15px; max-width: 46ch; }
+  .verse          { font-size: clamp(24px, 2.8vw, 34px); max-width: 26ch; }
+  .cover__names   { font-size: clamp(68px, 8vw, 124px); }
+  .gate__names    { font-size: clamp(64px, 7vw, 108px); }
+  .closing__names { font-size: clamp(44px, 5vw, 76px); }
+  .closing__text  { font-size: 15px; max-width: 40ch; }
+
+  /* Kedua mempelai berdampingan. */
+  .couple {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(28px, 5vw, 72px);
+  }
+  .couple__person { flex: 1 1 0; max-width: 360px; }
+  .couple__amp    { flex: 0 0 auto; font-size: clamp(30px, 3vw, 42px); }
+  .portrait       { width: min(100%, 330px); }
+
+  /* Kartu acara / lokasi / rekening berjajar. auto-fit menyesuaikan sendiri:
+     3 kartu acara jadi 3 kolom, 2 kartu lokasi jadi 2 kolom. */
+  .stack:not(.stack--rows) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    align-items: stretch;
+  }
+
+  /* Cerita kami: tiga kolom, tahun pindah ke atas teksnya. */
+  /* Lebar dibatasi supaya kolomnya tetap ramping -> kartunya benar-benar
+     tinggi, bukan kotak melebar. */
+  .timeline       { max-width: 860px; margin-inline: auto; gap: clamp(16px, 2vw, 28px); }
+  .timeline__text { font-size: 14px; }
+
+  /* Kartu galeri sedikit lebih besar di layar lebar. */
+  .gallery__item { width: clamp(220px, 18vw, 300px); }
+  .gallery__card { padding-bottom: clamp(30px, 2.6vw, 42px); }
+
+  /* Hitung mundur lebih lapang. */
+  .countdown       { max-width: 560px; gap: clamp(10px, 1.4vw, 18px); }
+  .countdown__cell { padding: clamp(18px, 2vw, 26px) 8px; }
+  .countdown__num  { font-size: clamp(32px, 3.4vw, 48px); }
+
+  /* Form tetap sempit (kolom isian panjang justru susah dibaca);
+     ucapan jadi dua kolom. */
+  .form   { max-width: 560px; margin-inline: auto; }
+  .wishes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 2vw, 28px);
+  }
+}
+
+/* ===================== LAYAR PENDEK: RAPATKAN ISI =====================
+   Di bawah 800px tinggi, beberapa bagian tak muat satu halaman kalau
+   jaraknya dibiarkan selega di layar tinggi. Ambangnya 800px supaya HP
+   sekelas 360x740 ikut kebagian. */
+@media (max-height: 800px) {
+  :root { --pad-y: clamp(22px, 4vw, 40px); }
+
+  .head            { margin-bottom: clamp(16px, 4vw, 28px); }
+  .stack           { gap: clamp(8px, 2vw, 14px); }
+  .card--event     { padding: clamp(12px, 3vw, 20px) clamp(12px, 3vw, 18px); }
+  .card--bank      { padding: clamp(12px, 3vw, 18px); }
+  .card__body      { padding: clamp(12px, 3vw, 16px); }
+  .timeline        { gap: clamp(7px, 1.8vw, 16px); }
+  .form            { gap: 10px; }
+  .input           { padding: 10px 14px; }
+  .input--area     { min-height: 76px; }
+  .field           { gap: 4px; }
+  .lead            { margin-top: 10px; line-height: 1.7; }
+  .deco--swag      { width: clamp(140px, 40vw, 220px); margin-bottom: 14px; }
+  .deco--dove      { width: clamp(54px, 14vw, 80px); margin-bottom: 12px; }
+  .couple          { margin-top: clamp(12px, 3vw, 24px); }
+  .countdown       { margin-top: clamp(14px, 4vw, 24px); }
+  .rule            { margin: 12px auto; }
+
+  /* Dua yang masih meluber di layar terpendek: Cerita Kami dan RSVP. */
+  .title           { font-size: clamp(24px, 6.5vw, 32px); }
+  .timeline__item  { padding: clamp(10px, 2.6vw, 18px) clamp(8px, 2vw, 14px); }
+  .timeline__text  { font-size: 11px; line-height: 1.55; }
+  .timeline__head  { margin-bottom: 5px; }
+  .timeline__year  { margin-bottom: 8px; }
+  .form__note      { min-height: 0; }
+  .head .lead      { margin-top: 8px; }
+}
+
+/* Layar sangat pendek (HP lawas 640px): satu tingkat lagi lebih rapat. */
+@media (max-height: 680px) {
+  .timeline   { gap: clamp(6px, 1.6vw, 12px); }
+  .head       { margin-bottom: clamp(12px, 3vw, 20px); }
+}
+
+/* Layar pendek & melebar (HP diputar): satu-halaman dilepas, terlalu sesak. */
+@media (max-height: 520px) and (orientation: landscape) {
+  html { scroll-snap-type: none; }
+  .screen { min-height: 0; }
+  .screen--cover { min-height: 560px; }
+  :root { --pad-y: 40px; }
+}
+
+/* ========================= HORMATI SETELAN GERAK ======================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-snap-type: none; scroll-behavior: auto; }
+  [data-px], [data-px-back], [data-px-cover] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .cover__hint, .musicBtn.is-playing .musicBtn__icon, .gate__inner { animation: none !important; }
+  .cupid { display: none; }        /* hiasan bergerak: sembunyikan saja */
+  /* Galeri berhenti berjalan; sebagai gantinya bisa digeser sendiri. */
+  .gallery__track { animation: none; }
+  .gallery { overflow-x: auto; }
+  .gallery__item img, .gallery__card { transition: none; }
+  /* Isi langsung tampil, tanpa muncul bergantian. */
+  .has-reveal .screen [data-px] > *,
+  .has-reveal .screen .stack > *,
+  .has-reveal .screen .timeline__item,
+  .has-reveal .screen .gallery__item,
+  .has-reveal .screen .countdown__cell,
+  .has-reveal .screen .wish,
+  .has-reveal .screen .field,
+  .has-reveal .screen .timeline__item > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;    /* kartu cerita: batalkan juga putarannya */
+  }
+  .gate { transition: none; }
+}
