@@ -33,10 +33,15 @@ function Orang({ data, sisi, bingkai, bingkaiW, bingkaiH, judul }) {
         />
       </div>
       <h2 className="couple__name">{data.nama}</h2>
+      {/* Tanpa <br /> di sekitar "&": .amp sudah display:block, jadi ia
+          sendiri yang memutus barisnya. Menambah <br /> justru menyisipkan
+          baris kosong di atas dan bawahnya. */}
       <p className="couple__parents">
         {judul}
         <br />
-        {data.orangTua}
+        {data.ayah}
+        <span className="amp">&amp;</span>
+        {data.ibu}
       </p>
     </div>
   );

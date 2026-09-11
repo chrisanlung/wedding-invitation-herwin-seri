@@ -549,6 +549,16 @@ a:hover { color: var(--accent-dk); }
   color: var(--muted);
   text-wrap: pretty;
 }
+/* "&" pemisah nama ayah dan ibu. .amp aslinya dirancang untuk nama mempelai
+   yang besar - di sana .54em pas. Di sini induknya cuma 0.75rem, jadi .54em
+   akan jadi sekitar 6px dan nyaris tak terbaca. Ukurannya dikembalikan dan
+   warnanya dibuat beraksen supaya terbaca sebagai pemisah, bukan salah
+   ketik. */
+.couple__parents .amp {
+  font-size: 1em;
+  margin: 0.0625rem 0;
+  color: var(--accent);
+}
 .couple__amp {
   margin: 0;
   font-family: var(--serif);
