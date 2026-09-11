@@ -63,6 +63,12 @@ export default function RootLayout({ children }) {
           <style>{`
             html.is-locked, body.is-locked { overflow: auto !important; height: auto !important; }
             .gate { display: none !important; }
+            /* Tanpa JS kelas is-locked tak pernah dilepas, jadi aturan jeda
+               animasi di globals.css akan membekukan isi undangan selamanya.
+               Dibatalkan di sini. */
+            html.is-locked .shell *,
+            html.is-locked .cupid,
+            html.is-locked .cupid__img { animation-play-state: running !important; }
           `}</style>
         </noscript>
       </head>

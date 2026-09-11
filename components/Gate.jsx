@@ -13,6 +13,7 @@
 import { useEffect, useState } from "react";
 import { useAudio } from "@/lib/AudioProvider";
 import { useGuestName } from "@/lib/hooks";
+import Doves from "./Doves";
 import { MEMPELAI, TANGGAL } from "@/lib/data";
 
 export default function Gate() {
@@ -57,7 +58,24 @@ export default function Gate() {
         <img className="deco deco--bush deco--bush-r" src="/assets/img/deco/bush.webp" alt="" width="560" height="133" />
       </div>
 
+      {/* Sesudah .gate__deco, jadi merpatinya melintas DI DEPAN pohon; tetap di
+          belakang .gate__inner yang ber-z-index 1, jadi tak pernah menutupi
+          nama mempelai maupun tombolnya. */}
+      <Doves />
+
       <div className="gate__inner">
+        {/* Monogram H&S. alt kosong + aria-hidden: ini pengulangan visual dari
+            nama yang tertulis tepat di bawahnya, jadi membacanya lagi hanya
+            menambah kebisingan bagi pembaca layar. */}
+        <img
+          className="gate__logo"
+          src="/assets/img/logo-hs-2.webp"
+          alt=""
+          aria-hidden="true"
+          width="360"
+          height="356"
+        />
+
         <p className="eyebrow">Undangan Pernikahan</p>
         <h1 className="gate__names">
           {MEMPELAI.pria.panggilan}

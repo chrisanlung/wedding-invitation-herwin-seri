@@ -172,6 +172,24 @@ body {
 /* Kunci scroll selama sampul pembuka masih tampil. */
 html.is-locked, body.is-locked { overflow: hidden; height: 100%; }
 
+/* Selama gerbang masih menutup layar, TIDAK ADA yang terlihat di baliknya -
+   .gate ber-z-index 60, di atas isi maupun kupid. Animasi mereka tetap
+   berjalan dan tetap dievaluasi peramban tiap frame.
+
+   Chrome melakukan satu pembaruan gaya per frame selama ada animasi aktif di
+   mana pun; biayanya naik seiring banyaknya animasi yang harus dievaluasi.
+   Menghentikan yang tersembunyi terukur memangkas kerja gaya di main thread
+   dari ~325ms jadi ~164ms per lima detik (CPU diperlambat 6x, tiga kali
+   pengukuran, selisihnya konsisten).
+
+   `paused`, bukan `none`: begitu kelas is-locked dilepas, animasinya lanjut
+   dari posisi terakhir tanpa meloncat. */
+html.is-locked .shell *,
+html.is-locked .cupid,
+html.is-locked .cupid__img {
+  animation-play-state: paused;
+}
+
 /* height:auto WAJIB ada di sini, bukan hanya di aturan per-gambar.
 
    Atribut width/height di <img> dipetakan jadi presentational hint untuk
@@ -1447,6 +1465,133 @@ select.input {
 
 .gate__inner { position: relative; animation: fadeUp 1s ease both; z-index: 1; }
 
+/* ==================== MERPATI DI HALAMAN PEMBUKA =======================
+   Delapan frame kepakan disimpan sebagai SATU strip mendatar
+   (dove-sprite.webp, 2880x433 = 8 x 360x433). Strip itu diletakkan di dalam
+   jendela selebar satu frame, lalu digeser dengan transform.
+
+   TRANSFORM, BUKAN background-position. Hanya transform dan opacity yang
+   bisa dijalankan compositor tanpa melukis ulang. Versi pertama memakai
+   background-position dan hasilnya, diukur di peramban dengan CPU
+   diperlambat 6x selama lima detik: 196 operasi paint dan 144 raster task.
+   Dengan transform, kepakannya tidak menyentuh tahap paint sama sekali.
+
+   Geserannya -100% DARI LEBAR STRIP. Karena strip delapan kali lebar
+   jendelanya, satu langkah steps(8) = -12,5% strip = tepat satu jendela =
+   satu frame. Ini yang membuat angkanya rapi; dengan background-position
+   dulu nilainya harus 800%/7 karena persen di sana bukan pergeseran.
+
+   TANPA drop-shadow. Filter memaksa elemen dilukis ulang tiap langkah, dan
+   di atas latar anggur bayangan merpati putih praktis tak terlihat - biaya
+   yang tidak membeli apa pun.
+
+   Lebar frame 360px bukan angka bulat asal: merpati terbesar 7rem, dan di
+   HP rem-nya sekitar 16,25px, jadi 114px. Di layar DPR 3 itu 341 piksel
+   perangkat. 360 menutupi kasus terberat tanpa sisa - 480px yang dipakai
+   sebelumnya memakan 8,9MB memori dekode untuk ketajaman yang tak pernah
+   terlihat. */
+
+/* --dove-y menekan seluruh ketinggian jalur terbang. Di HP ruang di atas
+   monogram hanya sekitar 141px sementara merpati terbesar 137px - tanpa
+   ditekan, merpatinya melintas tepat di balik logo dan terlihat berdesakan.
+   Di layar lebar ruangnya cukup, jadi pengalinya 1 (lihat blok 760px).
+
+   var() di dalam @keyframes diselesaikan memakai computed style ELEMENNYA,
+   jadi satu set keyframe bisa melayani dua ukuran layar - tak perlu menulis
+   keyframe kembar. Nilainya diwarisi .dove dari .doves. */
+.doves {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  pointer-events: none;
+  --dove-y: .42;
+}
+
+.dove {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+}
+
+/* Jendela selebar SATU frame. Rasionya rasio frame, bukan rasio strip. */
+.dove__win {
+  display: block;
+  width: 100%;
+  aspect-ratio: 360 / 433;
+  overflow: hidden;
+}
+
+.dove__strip {
+  display: block;
+  width: 800%;            /* delapan frame berjajar */
+  /* Wajib: aturan dasar `img { max-width: 100% }` akan memampatkan strip
+     jadi selebar jendelanya, dan kedelapan frame tampil berdesakan. */
+  max-width: none;
+  animation: doveFlap .84s steps(8) infinite;
+}
+@keyframes doveFlap { to { transform: translate3d(-100%, 0, 0); } }
+
+/* Tiga merpati: makin kecil dan makin pudar = makin jauh. Durasi dan jeda
+   dibuat tidak berkelipatan supaya susunannya tidak pernah berulang persis. */
+.dove--a { width: 4.5rem;  animation: doveCrossA 26s linear infinite; animation-delay: -14s; }
+.dove--b { width: 3.5rem;  opacity: .9;  animation: doveCrossB 34s linear infinite; animation-delay: -7s; }
+.dove--c { width: 2.75rem; opacity: .78; animation: doveCrossC 30s linear infinite; animation-delay: -26s; }
+
+/* Yang ketiga terbang ke kiri, jadi gambarnya dicerminkan. Dipasang di
+   .dove__win - bukan di .dove yang transform-nya dipakai jalur terbang,
+   dan bukan di .dove__strip yang transform-nya dipakai kepakan. Jendela ini
+   satu-satunya lapisan yang transform-nya masih bebas. */
+.dove--c .dove__win { transform: scaleX(-1); }
+
+/* JALUR PULANG DITEMPUH DI LUAR LAYAR. Sesudah keluar di tepi kanan,
+   merpatinya dinaikkan ke -40vh lalu kembali ke titik awal di ketinggian itu.
+   Tanpa itu ia terlihat menyeberang balik sambil menghadap arah yang salah -
+   CSS selalu meng-interpolasi, tidak bisa "melompat" begitu saja. */
+/* Seluruh jalur ditahan di atas 22vh. Blok teks gerbang mulai sekitar 33vh
+   (baris "Undangan Pernikahan"), dan walau merpatinya memang terlukis di
+   BELAKANG teks, melintas tepat di balik huruf tetap terlihat ramai.
+
+   BAGIAN YANG TERLIHAT 0-94%, pulangnya 94-100% dan seluruhnya di luar layar.
+   Jalur pulang sengaja sesingkat mungkin: ia tak terlihat, sementara tiap
+   persen yang dipakai untuk pulang adalah persen yang langitnya kosong.
+
+   Jeda di .dove--a/b/c bukan angka asal. Dengan durasi 26s/34s/30s, jeda
+   -14s/-7s/-26s adalah satu-satunya kelompok yang dicari secara menyeluruh
+   dan memenuhi dua syarat sekaligus: TIDAK PERNAH ada saat tanpa merpati
+   sama sekali (rata-rata 2,83 dari 3 terlihat), dan jarak antar waktu masuk
+   0,328 dari 0,333 yang ideal - jadi ketiganya masuk bergantian, tidak
+   berombongan. Kalau durasinya diubah, jedanya harus dicari ulang. */
+@keyframes doveCrossA {
+  0%    { transform: translate3d(-18vw, calc(21vh * var(--dove-y)), 0) rotate(-4deg); }
+  24%   { transform: translate3d(16vw, calc(11vh * var(--dove-y)), 0)  rotate(2deg); }
+  48%   { transform: translate3d(50vw, calc(19vh * var(--dove-y)), 0)  rotate(-2deg); }
+  72%   { transform: translate3d(84vw, calc(8vh * var(--dove-y)), 0)   rotate(3deg); }
+  94%   { transform: translate3d(118vw, calc(15vh * var(--dove-y)), 0) rotate(0deg); }
+  95%   { transform: translate3d(118vw, -40vh, 0); }
+  99.5% { transform: translate3d(-18vw, -40vh, 0); }
+  100%  { transform: translate3d(-18vw, calc(21vh * var(--dove-y)), 0) rotate(-4deg); }
+}
+@keyframes doveCrossB {
+  0%    { transform: translate3d(-16vw, calc(7vh * var(--dove-y)), 0)  rotate(3deg); }
+  28%   { transform: translate3d(22vw, calc(17vh * var(--dove-y)), 0)  rotate(-3deg); }
+  58%   { transform: translate3d(58vw, calc(5vh * var(--dove-y)), 0)   rotate(2deg); }
+  94%   { transform: translate3d(116vw, calc(14vh * var(--dove-y)), 0) rotate(-1deg); }
+  95%   { transform: translate3d(116vw, -40vh, 0); }
+  99.5% { transform: translate3d(-16vw, -40vh, 0); }
+  100%  { transform: translate3d(-16vw, calc(7vh * var(--dove-y)), 0)  rotate(3deg); }
+}
+/* Arah sebaliknya: masuk dari kanan, keluar di kiri. */
+@keyframes doveCrossC {
+  0%    { transform: translate3d(114vw, calc(22vh * var(--dove-y)), 0) rotate(3deg); }
+  32%   { transform: translate3d(72vw, calc(13vh * var(--dove-y)), 0)  rotate(-2deg); }
+  64%   { transform: translate3d(34vw, calc(22vh * var(--dove-y)), 0)  rotate(2deg); }
+  94%   { transform: translate3d(-20vw, calc(16vh * var(--dove-y)), 0) rotate(0deg); }
+  95%   { transform: translate3d(-20vw, -40vh, 0); }
+  99.5% { transform: translate3d(114vw, -40vh, 0); }
+  100%  { transform: translate3d(114vw, calc(22vh * var(--dove-y)), 0) rotate(3deg); }
+}
+
 /* Hiasan taman di halaman pembuka. clip supaya sudut bunga yang melewati
    tepi tidak memunculkan scrollbar. */
 .gate__deco {
@@ -1497,6 +1642,12 @@ select.input {
   .deco--bed { display: none; }
 }
 
+/* Monogram di puncak halaman pembuka. */
+.gate__logo {
+  width: 7rem;
+  margin: 0 auto 1rem;
+}
+
 .gate__names {
   margin: 0;
   font-family: var(--serif);
@@ -1530,6 +1681,18 @@ select.input {
 .gate__btn { margin-top: 1.9375rem; }
 
 .gate.is-closing { opacity: 0; transform: scale(1.06); pointer-events: none; }
+
+/* WAJIB ADA. `hidden` bawaan peramban bekerja lewat aturan [hidden]{display:none}
+   di stylesheet peramban, dan aturan author selalu menang atas itu - jadi
+   `display: flex` di .gate membuat atribut hidden-nya tak berpengaruh sama
+   sekali.
+
+   Akibatnya gerbang yang sudah "dilepas" sebenarnya masih menempati layar
+   penuh dengan opacity 0, dan segala yang ada di dalamnya - termasuk animasi
+   merpati - terus berjalan selamanya tanpa pernah terlihat. Terukur: sesudah
+   undangan dibuka, display masih `flex`, tingginya masih > 0, dan animasi
+   merpatinya masih berstatus running. */
+.gate[hidden] { display: none; }
 
 /* ========================================================================
    EFEK PARALAKS
@@ -1714,6 +1877,13 @@ select.input {
   .deco--bush-l { left: -8rem; }
   .deco--bush-r { right: -8rem; }
   .deco--bed { height: 13rem; }
+  /* Ruang di atas monogram jauh lebih lega, jadi merpatinya kembali penuh. */
+  .doves    { --dove-y: 1; }
+  .dove--a  { width: 7rem; }
+  .dove--b  { width: 5.25rem; }
+  .dove--c  { width: 4rem; }
+
+  .gate__logo { width: 10rem; margin-bottom: 1.375rem; }
   .gate__date { margin: 1.5rem 0 0; font-size: 0.8125rem; }
   .gate__to { margin-top: 2.25rem; }
   .gate__toName { font-size: 1.625rem; }
@@ -1786,6 +1956,12 @@ select.input {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-snap-type: none; scroll-behavior: auto; }
+  /* Merpatinya dihentikan, bukan disembunyikan: hiasannya tetap ada, hanya
+     tidak bergerak. */
+  .dove, .dove__strip { animation: none; }
+  .dove--a { transform: translate3d(6vw, 18vh, 0); }
+  .dove--b { transform: translate3d(72vw, 9vh, 0); }
+  .dove--c { transform: translate3d(40vw, 21vh, 0); }
   [data-px], [data-px-back], [data-px-cover] {
     animation: none !important;
     opacity: 1 !important;
