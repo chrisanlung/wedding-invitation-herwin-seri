@@ -45,7 +45,9 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#E3D9C8",
+  /* Warna bilah peramban di HP. Harus ikut palet: kalau tertinggal krem,
+     bilah atasnya terang sementara halamannya anggur gelap. */
+  themeColor: "#4A1220",
 };
 
 export default function RootLayout({ children }) {

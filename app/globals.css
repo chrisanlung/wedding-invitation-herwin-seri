@@ -45,22 +45,55 @@
    ========================================================================= */
 
 :root {
-  --page:      #E3D9C8;   /* latar di luar kartu */
-  --card:      #F6F1E9;   /* latar kartu */
-  --alt:       #EFE7DA;   /* latar section selang-seling */
-  --dark:      #3E362E;   /* section gelap */
-  --ink:       #3E362E;   /* teks utama */
-  --muted:     #6B6157;   /* teks sekunder */
-  --olive:     #8C8B6F;   /* label kecil */
-  --accent:    #A9765C;
-  --accent-dk: #8A5B45;
-  --cream:     #DCCEB9;
-  --cream-2:   #E7D2BE;
-  --line:      #DCCEB9;
-  --line-2:    #E0D3BF;
-  /* Kuning emas latar. Diambil dari foto sampulnya sendiri (median piksel
-     emas di page-1: #C18E41), jadi warnanya sewarna hiasan di foto itu -
-     bukan emas tebakan yang belum tentu cocok. */
+  /* ===================== PALET BURGUNDY =====================
+     Undangan ini berlatar GELAP: merah anggur dengan teks krem.
+
+     Peran tiap variabel dipisah tegas, dan itu bukan kerapian belaka.
+     Sewaktu paletnya masih terang, --card dipakai untuk DUA hal sekaligus:
+     latar kartu (terang) dan warna teks di atas bidang gelap (juga terang).
+     Satu nilai, dua peran - kebetulan cocok karena keduanya memang terang.
+     Begitu latarnya dibalik jadi gelap, kartunya harus ikut gelap sementara
+     teks di atas bidang gelap harus tetap terang; satu nilai tak bisa
+     melayani keduanya. Karena itu ada --on-dark dan --on-accent.
+
+     Semua pasangan warna di bawah sudah dihitung kontrasnya:
+     teks utama 10,9-16,2:1, teks sekunder 7,7-11,5:1, label kecil
+     5,7-8,5:1 - semuanya lolos ambang WCAG AA 4,5:1. */
+
+  /* permukaan */
+  --page:      #4A1220;   /* latar dasar */
+  --card:      #5A1828;   /* latar kartu */
+  --alt:       #3D0E1A;   /* latar section selang-seling */
+  --dark:      #2C0912;   /* section paling pekat */
+
+  /* teks */
+  --ink:       #F7F1EA;   /* teks utama */
+  --muted:     #DFC9C0;   /* teks sekunder */
+  --olive:     #CBAB9D;   /* label kecil */
+  --cream:     #F1E7DC;   /* teks di atas section pekat */
+  --cream-2:   #E7D2BE;   /* teks di atas foto */
+
+  /* peran khusus - lihat catatan di atas */
+  --on-dark:   #F7F1EA;   /* teks/ikon di atas bidang pekat atau foto */
+  --on-accent: #3A0D18;   /* teks di atas tombol beraksen terang */
+
+  /* aksen */
+  --accent:    #E0B07A;
+  --accent-dk: #F0C99C;
+
+  /* garis: dipilih dari ambang non-teks 3:1 - --line untuk yang harus
+     jelas (kolom isian, pemisah), --line-2 untuk tepi kartu yang halus. */
+  --line:      #B87484;
+  --line-2:    #9A4E60;
+
+  /* Lapisan penyatu di section tanpa foto latar. Dulu emas; sekarang anggur
+     yang lebih terang, dipasang 30% supaya section selang-selingnya masih
+     terbaca berselang. */
+  --wash:      #7A1B2E;
+  /* Emas ORNAMEN - kini hanya untuk hiasan, bukan lagi latar. Dipakai kilau
+     dan medali di Susunan Acara. Diambil dari foto sampulnya sendiri (median
+     piksel emas di page-1), jadi sewarna hiasan di foto itu. Jangan dipakai
+     sebagai warna teks: di atas kartu beranggur cuma 4,2:1. */
   --gold:      #C18E41;
 
   /* Lebar maksimum ISI. Latar, foto, dan pita gelap tetap selebar layar. */
@@ -135,7 +168,22 @@ body {
 /* Kunci scroll selama sampul pembuka masih tampil. */
 html.is-locked, body.is-locked { overflow: hidden; height: 100%; }
 
-img { max-width: 100%; display: block; }
+/* height:auto WAJIB ada di sini, bukan hanya di aturan per-gambar.
+
+   Atribut width/height di <img> dipetakan jadi presentational hint untuk
+   properti CSS width dan height. Menulis `width` di CSS hanya membatalkan
+   hint LEBARNYA; hint TINGGINYA tetap berlaku. Jadi gambar yang di CSS cuma
+   diberi lebar akan memakai lebar baru dengan tinggi lama - ditarik, bukan
+   diskalakan.
+
+   Tiga hiasan pernah kena persis ini: pohon sakura (-68,7% di HP), semak
+   bunga (-61,7%), dan untaian bunga di Ayat (-60,4%). Aturan per-gambar
+   sudah membatalkannya di .gallery__item img, tapi yang lain terlewat -
+   karena itu sekarang dipasang di dasar supaya tak bisa terlewat lagi.
+
+   Gambar yang memang perlu tinggi tetap (galeri, garis waktu, potret)
+   menimpanya dengan `height` sendiri, dan itu tetap menang. */
+img { max-width: 100%; display: block; height: auto; }
 
 /* Semua gambar hiasan: murni dekoratif, tak pernah menghalangi sentuhan. */
 .deco { pointer-events: none; user-select: none; }
@@ -189,8 +237,8 @@ a:hover { color: var(--accent-dk); }
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--gold);
-  opacity: .5;
+  background: var(--wash);
+  opacity: .3;
   pointer-events: none;
 }
 .screen--gold > * { position: relative; }
@@ -207,17 +255,17 @@ a:hover { color: var(--accent-dk); }
    digeser sampai kontrasnya lewat ambang dengan sisa. Jadi masih keluarga
    warna yang sama, bukan warna asing di palet. Arahnya selalu menambah
    kontras, jadi pemakai lain (teks di atas kartu putih, tombol) ikut aman. */
-.screen--gold,
-.gate {
-  --olive:  #474638;    /* dari #8C8B6F - eyebrow, label kolom isian */
-  --muted:  #4B443D;    /* dari #6B6157 - paragraf pengantar, isi ucapan */
-  --accent: #5B3F30;    /* dari #A9765C - kutipan ayat, tanda &, tombol */
-  --cream:  #F1ECE4;    /* dari #DCCEB9 - eyebrow di section gelap beremas */
-}
+/* Dulu di sini ada blok yang MENGGELAPKAN --olive/--muted/--accent khusus
+   di dalam .screen--gold dan .gate, karena lapisan emas 50% membuat latarnya
+   terang dan teks sekunder jatuh di bawah 2:1.
+
+   Sekarang tidak diperlukan lagi: lapisannya anggur gelap, bukan emas, jadi
+   nilai bawaan di :root yang sudah terang justru pasangan yang benar. Kalau
+   blok itu dibiarkan, teksnya malah jadi gelap di atas latar gelap. */
 
 .screen--center { text-align: center; }
 .screen--alt    { background: var(--alt); }
-.screen--dark   { background: var(--dark); color: var(--card); }
+.screen--dark   { background: var(--dark); color: var(--on-dark); }
 
 .screen--cover {
   min-height: 100vh;
@@ -275,7 +323,7 @@ a:hover { color: var(--accent-dk); }
   padding: 0 1.6875rem 2.6875rem;
 }
 
-.screen--closing { padding-block: 5.375rem; color: var(--card); }
+.screen--closing { padding-block: 5.375rem; color: var(--on-dark); }
 .screen--gallery { padding-inline: 1.25rem; }
 
 .screen__body { position: relative; }
@@ -381,14 +429,14 @@ a:hover { color: var(--accent-dk); }
   font-weight: 300;
   font-size: 3.75rem;
   line-height: .98;
-  color: var(--card);
+  color: var(--on-dark);
 }
 .cover__date {
   margin: 0;
   font-size: 0.875rem;
   letter-spacing: .26em;
   text-transform: uppercase;
-  color: var(--card);
+  color: var(--on-dark);
 }
 .cover__hint {
   margin: 1.4375rem 0 0;
@@ -402,7 +450,10 @@ a:hover { color: var(--accent-dk); }
 /* ================================ AYAT ================================== */
 
 .deco--swag {
-  width: 12.6875rem;
+  /* Untaian bunga melebar (520x124). Sempat tampil sebagai karangan bulat
+     karena tingginya terkunci atribut - lihat catatan height:auto di aturan
+     img paling atas. */
+  width: 17rem;
   margin: 0 auto 1.4375rem;
   opacity: .92;
 }
@@ -419,7 +470,11 @@ a:hover { color: var(--accent-dk); }
   font-style: italic;
   font-size: 1.4375rem;
   line-height: 1.6;
-  color: #4A4038;
+  /* Dulu #4A4038 - warna gelap yang ditulis langsung, dipilih untuk latar
+     emas yang terang. Di latar anggur kontrasnya cuma 1,3:1, praktis tak
+     terbaca. Sekarang ikut variabel supaya tak ketinggalan lagi kalau
+     palet berubah. */
+  color: var(--cream);
   text-wrap: pretty;
 }
 .verse__ref {
@@ -450,8 +505,8 @@ a:hover { color: var(--accent-dk); }
 .portrait {
   position: relative;
   width: min(100%, 16.75rem);
-  aspect-ratio: 420 / 525;
   margin: 0 auto 1.125rem;
+  /* aspect-ratio dipasang per sisi di bawah: kedua bingkainya beda rasio. */
 }
 .portrait__photo {
   position: absolute;
@@ -464,8 +519,22 @@ a:hover { color: var(--accent-dk); }
 }
 .portrait__frame { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-.portrait--male   { --hole-x: 17.9%; --hole-y: 15.2%; --hole-w: 63.6%; --hole-h: 66.3%; }
-.portrait--female { --hole-x: 20.7%; --hole-y: 16.0%; --hole-w: 58.6%; --hole-h: 64.9%; }
+/* Angka --hole-* di bawah bukan kira-kira: kotak lubangnya diukur dari kanal
+   alpha berkas bingkainya sendiri (flood fill dari titik tengah, lalu diambil
+   kotak pembatasnya). Hasil ukur sisi pria: x 20.2% y 16.2% w 54.6% h 64.6%.
+
+   Yang dipasang sengaja 1% lebih besar dan digeser 0,5% ke kiri-atas, jadi
+   tepi fotonya menyelip SEDIKIT DI BAWAH bingkainya. Kalau dipasang pas
+   ukuran, sisa anti-aliasing di tepi lubang menyisakan garis rambut yang
+   kelihatan. */
+.portrait--male {
+  aspect-ratio: 900 / 1061;
+  --hole-x: 19.7%; --hole-y: 15.7%; --hole-w: 55.6%; --hole-h: 65.6%;
+}
+.portrait--female {
+  aspect-ratio: 420 / 524;
+  --hole-x: 20.7%; --hole-y: 16.0%; --hole-w: 58.6%; --hole-h: 64.9%;
+}
 
 .couple__name {
   margin: 0;
@@ -599,7 +668,7 @@ a:hover { color: var(--accent-dk); }
   background: var(--card);
   border: 1px solid var(--line-2);
   padding: 0.25rem;
-  box-shadow: 0 0.25rem 0.875rem rgba(62, 54, 46, .1);
+  box-shadow: 0 0.25rem 0.875rem rgba(0, 0, 0, .3);
 }
 .agenda__media img {
   width: 100%;
@@ -645,7 +714,7 @@ a:hover { color: var(--accent-dk); }
   width: 2rem;
   height: 2rem;
   margin-bottom: 0.375rem;
-  filter: drop-shadow(0 0.125rem 0.1875rem rgba(62, 54, 46, .3));
+  filter: drop-shadow(0 0.125rem 0.1875rem rgba(0, 0, 0, .45));
 }
 /* Medali selalu menempel ke sisi yang menghadap garis. */
 .agenda__row:nth-child(even) .agenda__seal { margin-left: auto; }
@@ -688,13 +757,14 @@ a:hover { color: var(--accent-dk); }
   flex-direction: column;
   justify-content: flex-end;   /* isi menepi ke bawah, tempat kerudung paling pekat */
   min-height: 11.1875rem;
-  background-color: #2a211b;   /* terlihat kalau fotonya belum termuat */
+  background-color: var(--dark);   /* terlihat kalau fotonya belum termuat */
   background-size: cover;
   background-position: center;
   border-color: rgba(246, 241, 233, .26);
-  color: var(--card);
-  /* teks sekundernya dibalik jadi terang - di section ini variabelnya
-     sedang bernilai gelap karena latar emas */
+  color: var(--on-dark);
+  /* Teks sekundernya dipatok ke krem tembus pandang, bukan var(--muted):
+     kartu ini berlatar FOTO, jadi kontrasnya tak boleh bergantung pada warna
+     section di belakangnya. */
   --muted: rgba(246, 241, 233, .88);
 }
 
@@ -718,11 +788,11 @@ a:hover { color: var(--accent-dk); }
    latar dan teksnya sama-sama krem dan tulisannya hilang. */
 .card--venue .btn--ghost {
   border-color: rgba(246, 241, 233, .78);
-  color: var(--card);
+  color: var(--on-dark);
 }
 .card--venue .btn--ghost:hover {
-  background: var(--card);
-  color: var(--ink);
+  background: var(--on-dark);
+  color: var(--on-accent);
 }
 .card--bank  { padding: 1.25rem; }
 .card__body  { padding: 1.25rem 1.25rem 1.3125rem; }
@@ -774,7 +844,7 @@ a:hover { color: var(--accent-dk); }
   min-height: 26.0625rem;
   /* warna dasar: yang terlihat kalau fotonya belum termuat, dan yang mengisi
      sisa bingkai kalau rasio fotonya tak persis sama dengan kartunya */
-  background-color: #2a211b;
+  background-color: var(--dark);
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
@@ -894,11 +964,14 @@ a:hover { color: var(--accent-dk); }
 }
 
 .gallery__card {
+  /* Sengaja putih dan ditulis langsung, bukan var(--card): ini kertas
+     polaroid, bukan permukaan kartu biasa. Justru kontras putihnya di atas
+     anggur yang membuat fotonya terbaca sebagai cetakan foto. */
   background: #FFFCF7;
   border: 1px solid var(--line-2);
   /* bawah lebih tebal: proporsi foto polaroid */
   padding: 0.4375rem 0.4375rem 1.375rem;
-  box-shadow: 0 0.5rem 1.25rem rgba(62, 54, 46, .12);
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, .32);
   transition: transform .55s cubic-bezier(.2, .7, .3, 1), box-shadow .5s ease;
 }
 .gallery__frame { display: block; overflow: hidden; }
@@ -917,7 +990,7 @@ a:hover { color: var(--accent-dk); }
    aturan nth-child di atas - kekhususannya sama, jadi yang belakangan menang. */
 .gallery__item:hover .gallery__card {
   transform: rotate(0deg) translateY(-0.625rem);
-  box-shadow: 0 1.125rem 2.125rem rgba(62, 54, 46, .22);
+  box-shadow: 0 1.125rem 2.125rem rgba(0, 0, 0, .45);
 }
 .gallery__item img {
   width: 100%;
@@ -974,7 +1047,9 @@ select.input {
 }
 
 .form__note { margin: 0.25rem 0 0; text-align: center; font-size: 0.75rem; color: var(--olive); min-height: 1.2em; }
-.form__note--error { color: #A2503C; }
+/* Salmon terang, bukan karat gelap seperti dulu: di latar anggur warna
+   lamanya cuma 1,9:1. Yang ini 7,2:1 dan masih terbaca sebagai "galat". */
+.form__note--error { color: #FFB3A0; }
 
 /* ================================ UCAPAN ================================ */
 
@@ -1023,8 +1098,8 @@ select.input {
   transition: background .2s ease, color .2s ease;
   -webkit-tap-highlight-color: transparent;
 }
-.btn--ghost:hover { background: var(--accent); color: var(--card); }
-.btn--solid { background: var(--accent); border-color: var(--accent); color: var(--card); }
+.btn--ghost:hover { background: var(--accent); color: var(--on-accent); }
+.btn--solid { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .btn--solid:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
 .btn--block { width: 100%; letter-spacing: .26em; }
 .btn--sm { padding: 0.5625rem 1.125rem; font-size: 0.625rem; }
@@ -1057,7 +1132,7 @@ select.input {
   font-size: 0.9375rem;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 0.375rem 1.125rem rgba(62, 54, 46, .16);
+  box-shadow: 0 0.375rem 1.125rem rgba(0, 0, 0, .38);
   display: grid;
   place-items: center;
   -webkit-tap-highlight-color: transparent;
@@ -1089,7 +1164,7 @@ select.input {
 .cupid__img {
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 0.625rem 1.125rem rgba(62, 54, 46, .22));
+  filter: drop-shadow(0 0.625rem 1.125rem rgba(0, 0, 0, .45));
 }
 
 /* Cupid pertama: agak besar, menghadap kanan. */
@@ -1308,9 +1383,9 @@ select.input {
      dengan begitu ia otomatis berada di bawah hiasan bunga dan teksnya -
      bunganya tetap berwarna aslinya, tidak ikut terkena semu emas. */
   background:
-    linear-gradient(rgba(193, 142, 65, .5), rgba(193, 142, 65, .5)),
+    linear-gradient(rgba(122, 27, 46, .3), rgba(122, 27, 46, .3)),
     radial-gradient(120% 90% at 50% 28%,
-              var(--card) 0%, var(--alt) 58%, var(--page) 100%);
+              var(--card) 0%, var(--page) 58%, var(--alt) 100%);
   overflow: clip;
   transition: opacity .7s ease, transform .7s ease;
 }
@@ -1328,17 +1403,21 @@ select.input {
 /* Pohon sakura mengapit kiri-kanan. Sengaja dibiarkan menjorok keluar tepi
    supaya tidak memakan ruang teks di layar sempit, dan pangkalnya tertutup
    hamparan bunga di bawah supaya terlihat tertanam. */
-.deco--tree { position: absolute; bottom: 12%; width: 7.3125rem; }
+.deco--tree { position: absolute; bottom: 12%; width: 15rem; }
 /* Geserannya px ter-clamp, bukan persen: persen membuat pohon terdorong
    terlalu jauh keluar layar di monitor lebar (sampai 200px tak terlihat),
    sementara di HP justru kurang menepi dan menabrak teks. */
-.deco--tree-l { left: -3.4375rem; }
-.deco--tree-r { right: -3.4375rem; transform: scaleX(-1); }
+.deco--tree-l { left: -8.5rem; }
+.deco--tree-r { right: -8.5rem; transform: scaleX(-1); }
 
-/* Semak bunga di kedua sudut bawah - lapisan paling depan. */
-.deco--bush { position: absolute; bottom: -2%; width: 13.1875rem; }
-.deco--bush-l { left: -10%; }
-.deco--bush-r { right: -10%; transform: scaleX(-1); }
+/* Semak bunga di kedua sudut bawah - lapisan paling depan.
+
+   Lebarnya jauh lebih besar dari kesan visualnya: berkasnya memang hamparan
+   melebar (560x133, rasio 4,2:1), jadi 22rem lebar hanya setinggi ~5rem.
+   Geserannya rem, bukan persen - alasannya sama dengan pohon di atas. */
+.deco--bush { position: absolute; bottom: -2%; width: 22rem; }
+.deco--bush-l { left: -4rem; }
+.deco--bush-r { right: -4rem; transform: scaleX(-1); }
 
 /* Hamparan bunga dipasang sebagai latar BERULANG, bukan <img>. Dengan
    background-size: auto 100% gambarnya diskala ke tinggi pita lalu diulang ke
@@ -1488,6 +1567,9 @@ select.input {
   .couple__person { flex: 1 1 0; max-width: 22.5rem; }
   .couple__amp    { flex: 0 0 auto; font-size: 2.375rem; }
   .portrait       { width: min(100%, 20.625rem); }
+  /* 20.625rem / (420/524) = 25.73rem tinggi. Supaya sisi pria setinggi itu
+     juga: 25.73 x (900/1061) = 21.81rem. Tanpa ini namanya beda 22px. */
+  .portrait--male { width: min(100%, 21.8125rem); }
 
   /* Susunan acara: semuanya dilonggarkan, gambarnya jadi hampir dua kali
      tinggi HP. Tiga baris x ~11.9rem + jarak masih di bawah ruang yang
@@ -1549,7 +1631,7 @@ select.input {
   .screen--closing { padding-block: 6.5rem; }
   .rule--light { margin: 1.625rem auto; }
   .cover__hint { margin: 1.75rem 0 0; }
-  .deco--swag { width: 18.75rem; margin: 0 auto 1.875rem; }
+  .deco--swag { width: 26rem; margin: 0 auto 1.875rem; }
   .deco--dove { width: 6.5rem; margin: 0 auto 1.5rem; }
   .couple { margin-top: 2.75rem; }
   .couple__name { font-size: 2.125rem; }
@@ -1570,10 +1652,12 @@ select.input {
   .cupid--a { width: 6rem; }
   .cupid--b { width: 4.875rem; }
   .gate { padding: 2.75rem; }
-  .deco--tree { width: 18.75rem; }
-  .deco--tree-l { left: -6rem; }
-  .deco--tree-r { right: -6rem; }
-  .deco--bush { width: 26.25rem; }
+  .deco--tree { width: 28rem; }
+  .deco--tree-l { left: -14rem; }
+  .deco--tree-r { right: -14rem; }
+  .deco--bush { width: 34rem; }
+  .deco--bush-l { left: -8rem; }
+  .deco--bush-r { right: -8rem; }
   .deco--bed { height: 13rem; }
   .gate__date { margin: 1.5rem 0 0; font-size: 0.8125rem; }
   .gate__to { margin-top: 2.25rem; }

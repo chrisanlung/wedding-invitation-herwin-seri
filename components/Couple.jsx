@@ -1,11 +1,16 @@
 /* Foto mempelai duduk DI BALIK bingkai bunga. Posisi dan ukuran lubang
    bingkainya diukur dari berkas bingkainya dan disimpan sebagai variabel
    --hole-* di CSS (.portrait--male / .portrait--female), jadi fotonya pas
-   di dalam elips. Kalau ganti bingkai, ukur ulang lubangnya. */
+   di dalam elips. Kalau ganti bingkai, ukur ulang lubangnya.
+
+   Kedua bingkai TIDAK sama rasionya (male-2 900x1061, female 420x524), jadi
+   aspect-ratio-nya juga dipasang per sisi di CSS - kalau dipukul rata,
+   bingkainya ikut ketarik. Lebar sisi pria di desktop sengaja sedikit lebih
+   besar supaya TINGGI kedua potret sama dan nama di bawahnya tetap sebaris. */
 
 import { MEMPELAI } from "@/lib/data";
 
-function Orang({ data, sisi, bingkai, bingkaiH, judul }) {
+function Orang({ data, sisi, bingkai, bingkaiW, bingkaiH, judul }) {
   return (
     <div className="couple__person">
       <div className={`portrait portrait--${sisi}`}>
@@ -22,7 +27,7 @@ function Orang({ data, sisi, bingkai, bingkaiH, judul }) {
           src={bingkai}
           alt=""
           aria-hidden="true"
-          width="420"
+          width={bingkaiW}
           height={bingkaiH}
           loading="lazy"
         />
@@ -48,8 +53,9 @@ export default function Couple() {
           <Orang
             data={MEMPELAI.pria}
             sisi="male"
-            bingkai="/assets/img/deco/frame-male.webp"
-            bingkaiH="525"
+            bingkai="/assets/img/deco/frame-male-2.webp"
+            bingkaiW="900"
+            bingkaiH="1061"
             judul="Putra dari"
           />
 
@@ -61,6 +67,7 @@ export default function Couple() {
             data={MEMPELAI.wanita}
             sisi="female"
             bingkai="/assets/img/deco/frame-female.webp"
+            bingkaiW="420"
             bingkaiH="524"
             judul="Putri dari"
           />
