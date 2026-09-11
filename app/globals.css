@@ -165,6 +165,14 @@ a:hover { color: var(--accent-dk); }
   justify-content: center;
   padding: var(--pad-y) var(--pad-x);
   scroll-snap-align: start;
+  /* Wajib berhenti di TIAP halaman, tidak boleh dilewati.
+
+     `scroll-snap-type: y mandatory` saja hanya menentukan di mana gulirnya
+     mendarat, bukan seberapa jauh ia boleh meluncur: satu sentakan jari di
+     HP membawa halaman melewati tiga-empat bagian sekaligus lalu baru
+     menempel. Dengan `always`, tiap bagian jadi penghalang - sekencang apa
+     pun sentakannya, gulirnya berhenti di halaman berikutnya. */
+  scroll-snap-stop: always;
   overflow: clip;
 }
 
