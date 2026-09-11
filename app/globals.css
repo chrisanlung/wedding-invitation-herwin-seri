@@ -943,13 +943,18 @@ a:hover { color: var(--accent-dk); }
 .gallery:hover .gallery__track,
 .gallery:focus-within .gallery__track { animation-play-state: paused; }
 
-/* Set foto digandakan, lalu digeser tepat -50% = persis satu set penuh.
-   Jarak antar kartu memakai margin-kanan, BUKAN gap: dengan gap, lebar track
-   jadi 2n kartu + (2n-1) jarak, sehingga -50% meleset setengah jarak dan
-   sambungannya tersentak tiap putaran. */
+/* Set foto diulang LIMA kali (lihat ULANGAN di components/Gallery.jsx),
+   lalu digeser -20% = persis satu set penuh.
+
+   Angka -20% terikat ke jumlah set: 5 set -> -20%, 4 set -> -25%.
+   Mengubah salah satunya saja membuat sambungan loop melompat.
+
+   Kenapa empat dan bukan dua: dengan dua set, di akhir putaran yang tersisa
+   menutupi layar hanya satu set - dan satu set cuma ~77% lebar layar, jadi
+   sisanya kosong. Penjelasan lengkapnya ada di Gallery.jsx. */
 @keyframes galleryRun {
   from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  to   { transform: translateX(-20%); }
 }
 
 /* Tiga lapis, masing-masing satu tugas - supaya tak saling menimpa:
