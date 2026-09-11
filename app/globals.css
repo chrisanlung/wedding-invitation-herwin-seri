@@ -86,9 +86,13 @@
   --line:      #B87484;
   --line-2:    #9A4E60;
 
-  /* Lapisan penyatu di section tanpa foto latar. Dulu emas; sekarang anggur
-     yang lebih terang, dipasang 30% supaya section selang-selingnya masih
-     terbaca berselang. */
+  /* Anggur terang untuk lapisan tipis. Section tanpa foto latar TIDAK lagi
+     memakainya - sejak ada lapisan bergambar, mereka memakai tabir tembus
+     pandang dari --card/--alt/--dark.
+
+     Yang masih memakai nilainya: gradasi halaman pembuka, ditulis di sana
+     sebagai rgba(122, 27, 46, .3) karena rgba() tak bisa menerima variabel
+     heksadesimal. Kalau angka di sini diubah, ubah juga di .gate. */
   --wash:      #7A1B2E;
   /* Emas ORNAMEN - kini hanya untuk hiasan, bukan lagi latar. Dipakai kilau
      dan medali di Susunan Acara. Diambil dari foto sampulnya sendiri (median
@@ -185,6 +189,32 @@ html.is-locked, body.is-locked { overflow: hidden; height: 100%; }
    menimpanya dengan `height` sendiri, dan itu tetap menang. */
 img { max-width: 100%; display: block; height: auto; }
 
+/* ===================== LATAR BERGAMBAR SATU LAPIS ======================
+   Hiasan bunga di sudut gambar hanya boleh muncul SEKALI sepanjang undangan.
+   Karena itu ia dipasang sebagai satu lapisan `position: fixed` seukuran
+   layar, bukan sebagai background tiap section - kalau per section, bunga
+   yang sama akan terulang sembilan kali sambil digulir.
+
+   position: fixed, BUKAN background-attachment: fixed. Yang kedua punya
+   riwayat panjang bermasalah di Safari iOS (ukurannya meleset dan
+   gulirannya tersendat). Lapisan fixed sendiri sudah terbukti jalan di
+   undangan ini - tombol musik (.dock) memakainya.
+
+   z-index -1 menaruhnya di belakang seluruh isi tapi tetap di depan warna
+   dasar body, jadi warna body tetap berfungsi sebagai cadangan kalau
+   gambarnya gagal dimuat.
+
+   Halaman pembuka TIDAK terpengaruh: .gate punya latar gradasinya sendiri
+   yang pekat, jadi ia menutupi lapisan ini. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: url("/assets/img/background_1.webp") center center / cover no-repeat;
+  pointer-events: none;
+}
+
 /* Semua gambar hiasan: murni dekoratif, tak pernah menghalangi sentuhan. */
 .deco { pointer-events: none; user-select: none; }
 a { color: var(--accent); text-decoration: none; }
@@ -196,7 +226,10 @@ a:hover { color: var(--accent-dk); }
 
 .shell {
   width: 100%;
-  background: var(--card);
+  /* Sengaja tanpa latar: warna dasarnya kini dibawa masing-masing section
+     sebagai tabir tembus pandang, supaya lapisan bergambar di belakangnya
+     tetap terlihat. */
+  background: transparent;
   position: relative;
   /* clip, BUKAN hidden — lihat catatan "Efek paralaks" di bawah. */
   overflow: clip;
@@ -224,23 +257,30 @@ a:hover { color: var(--accent-dk); }
   overflow: clip;
 }
 
-/* Latar kuning emas untuk section yang TIDAK punya foto latar (semuanya
-   kecuali Cover, Hitung mundur, dan Penutup). Dipasang sebagai lapisan
-   transparan 50%, bukan warna baru, supaya warna dasar tiap section masih
-   terbaca di baliknya - section selang-seling tetap terlihat berselang.
+/* TABIR SECTION. Penanda .screen--gold artinya "section ini tidak punya
+   foto latar" - persis sembilan section, dan hanya section itulah yang
+   memperlihatkan lapisan bergambar di belakangnya.
 
-   Anak-anak section dibuat `position: relative` supaya terlukis DI ATAS
-   lapisan ini. Tanpa itu, isi yang bukan elemen berposisi (blok biasa)
-   dilukis lebih dulu daripada ::before yang berposisi absolut, jadi malah
-   tertutup emasnya. */
-.screen--gold::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--wash);
-  opacity: .3;
-  pointer-events: none;
-}
+   Warnanya tembus pandang, bukan pekat: itu yang membuat gambarnya terlihat.
+   Tiga nada berbeda mempertahankan irama selang-seling yang sudah ada -
+   tanpa itu seluruh undangan jadi satu bidang datar yang sama.
+
+   Kenapa specificity dua kelas untuk alt dan dark: .screen--alt dan
+   .screen--dark masih memasang warna PEKAT untuk section yang punya foto
+   (Hitung Mundur memakai .screen--dark tanpa .screen--gold, dan warnanya
+   memang harus menutup). Selektor dua kelas menimpanya hanya untuk section
+   tanpa foto.
+
+   Angkanya bukan tebakan: 0.70 adalah titik di mana teks utama di atas
+   bagian gambar YANG PALING TERANG (garis bunga di sudut) masih 5,8-7,7:1,
+   sementara di bagian rata mencapai 12-15:1. */
+.screen--gold              { background: rgba(90, 24, 40, .70); }
+.screen--alt.screen--gold  { background: rgba(61, 14, 26, .70); }
+.screen--dark.screen--gold { background: rgba(44, 9, 18, .76); }
+
+/* Tetap dipertahankan walau lapisan ::before sudah tidak ada: beberapa
+   section punya hiasan berposisi absolut, dan aturan ini menjaga isinya
+   terlukis di atasnya. */
 .screen--gold > * { position: relative; }
 
 /* Warna teks sekunder disesuaikan, HANYA di dalam section beremas.
