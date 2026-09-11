@@ -12,7 +12,36 @@
 
 /* =========================================================================
    Undangan Pernikahan Herwin & Seri
-   Mobile-first. Semua ukuran memakai clamp() supaya luwes dari 320px ke atas.
+
+   DUA DESAIN, MASING-MASING DISKALAKAN UTUH.
+
+   Dulu tiap ukuran punya rumus vw sendiri-sendiri lewat clamp(min, Nvw,
+   max). Rumusnya berbeda-beda, jadi saat layar melebar tiap elemen tumbuh
+   dengan laju yang tidak sama: tata letaknya berubah bentuk, bukan sekadar
+   membesar. Di monitor lebar hampir semuanya mentok ke `max` sehingga isi
+   tampak kecil dan tenggelam di tengah layar.
+
+   Sekarang ada dua desain:
+
+     < 760px  -> desain HP,      digambar untuk 384px
+     >= 760px -> desain desktop, digambar untuk 1920x960
+
+   dan masing-masing diskalakan UTUH ke layar yang ada. Semua ukuran di
+   file ini memakai rem; yang menentukan besar-kecilnya cuma satu angka,
+   yaitu font-size milik <html> (lihat aturan `html` di bawah). Karena
+   semua tumbuh dengan faktor yang sama, proporsinya tidak pernah berubah:
+   monitor 1920px dan 2560px memperlihatkan gambar yang sama persis, hanya
+   pikselnya lebih banyak.
+
+   MENGUBAH UKURAN: untuk membesarkan/mengecilkan SEMUANYA, ubah pembagi
+   di aturan `html`. Untuk satu elemen saja, ubah nilai rem-nya di sini
+   (1rem = 16px pada layar acuan). Jangan menulis px lagi kecuali untuk
+   garis tepi 1px dan sejenisnya.
+
+   Satuan vw/vh yang MASIH boleh ada cuma empat: skala akar di `html`,
+   tinggi satu layar (100svh), trik full-bleed (100vw + margin negatif),
+   dan jalur terbang kupid di @keyframes - semuanya memang harus mengikuti
+   layar. Jangan memakai clamp() dengan vw untuk ukuran elemen lagi.
    ========================================================================= */
 
 :root {
@@ -35,7 +64,7 @@
   --gold:      #C18E41;
 
   /* Lebar maksimum ISI. Latar, foto, dan pita gelap tetap selebar layar. */
-  --content-w: 1120px;
+  --content-w: 70rem;
 
   /* --font-serif / --font-sans datang dari next/font (lihat app/layout.js).
      Daftar cadangannya tetap ditulis: kalau berkas hurufnya belum termuat,
@@ -44,16 +73,47 @@
   --serif: var(--font-serif), Georgia, "Times New Roman", serif;
   --sans:  var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  /* jarak dalam section — ikut lebar layar */
-  --pad-y: clamp(30px, 7vw, 72px);
-  --pad-x: clamp(22px, 7vw, 38px);
+  /* Jarak dalam section. Nilai HP; pasangan desktopnya di blok 760px. */
+  --pad-y: 1.875rem;
+  --pad-x: 1.6875rem;
 
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* =========================== SKALA SELURUH HALAMAN =======================
+   INI SATU-SATUNYA TEMPAT UNTUK MENGATUR "BESAR-KECIL" UNDANGAN.
+
+   Semua ukuran di file ini memakai rem, jadi seluruh halaman ikut satu
+   angka: font-size milik <html>. Angka itu dihitung dari ukuran layar,
+   sehingga undangan tampil dengan PROPORSI yang sama di layar mana pun -
+   monitor 1900px dan 2560px memperlihatkan gambar yang sama, hanya
+   pikselnya lebih banyak.
+
+   Acuannya 1920x960 = 16px. Pembaginya tinggal ukuran acuan dibagi 16:
+   1920/16 = 120 untuk lebar, 960/16 = 60 untuk tinggi.
+
+   Dipakai yang TERKECIL dari keduanya. Kalau hanya lebar yang dipakai,
+   monitor lebar-tapi-pendek (1080p pada skala Windows 125%) akan membesar
+   mengikuti lebarnya lalu isinya tidak muat setinggi layar. Memakai min()
+   berarti halaman selalu menyesuaikan sisi yang paling sempit - persis
+   cara gambar di-"fit" ke dalam bingkai.
+
+   Batas bawah 12px menjaga layar kecil-dan-pendek (HP diputar mendatar)
+   tetap terbaca; di situ isinya boleh lebih tinggi dari layar, dan blok
+   @media landscape di bawah memang sudah melepas scroll-snap untuk itu.
+   Batas atas 32px mencegah monitor 4K pada skala 100% jadi raksasa.
+
+   Kalau ingin SEMUANYA sedikit lebih besar: kecilkan pembaginya (mis. 120
+   -> 112). Lebih kecil: besarkan. Jangan mengubah nilai rem satu per satu. */
+
 html {
+  /* HP: hanya ikut lebar. Tinggi HP terlalu beragam (SE 553px, Pro Max
+     800px) - kalau tingginya ikut dihitung, HP kecil dapat huruf 11px.
+     Layar HP yang pendek ditangani blok @media (max-height) di bawah. */
+  font-size: clamp(14px, calc(100vw / 24), 18px);   /* acuan 384px */
+
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
   /* Satu section = satu halaman, jadi snap-nya tegas. Ganti ke `proximity`
@@ -66,7 +126,7 @@ body {
   background: var(--page);
   color: var(--ink);
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 1.6;
   overflow-x: hidden;              /* jaring pengaman: tak pernah geser ke samping */
   -webkit-font-smoothing: antialiased;
@@ -204,11 +264,11 @@ a:hover { color: var(--accent-dk); }
   justify-content: flex-end;
   align-items: center;
   text-align: center;
-  padding: 0 clamp(24px, 7vw, 34px) clamp(40px, 11vw, 58px);
+  padding: 0 1.6875rem 2.6875rem;
 }
 
-.screen--closing { padding-block: clamp(80px, 22vw, 104px); color: var(--card); }
-.screen--gallery { padding-inline: clamp(16px, 5vw, 26px); }
+.screen--closing { padding-block: 5.375rem; color: var(--card); }
+.screen--gallery { padding-inline: 1.25rem; }
 
 .screen__body { position: relative; }
 
@@ -255,8 +315,8 @@ a:hover { color: var(--accent-dk); }
 /* ============================== TIPOGRAFI =============================== */
 
 .eyebrow {
-  margin: 0 0 8px;
-  font-size: clamp(10px, 2.8vw, 11px);
+  margin: 0 0 0.5rem;
+  font-size: 0.6875rem;
   letter-spacing: .34em;
   text-transform: uppercase;
   color: var(--olive);
@@ -268,38 +328,38 @@ a:hover { color: var(--accent-dk); }
   margin: 0;
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(29px, 8.5vw, 35px);
+  font-size: 2.0625rem;
   line-height: 1.15;
 }
-.title--center { text-align: center; margin-bottom: 30px; }
+.title--center { text-align: center; margin-bottom: 1.875rem; }
 
 .lead {
-  margin: 14px auto 0;
+  margin: 0.875rem auto 0;
   max-width: 30ch;
-  font-size: clamp(13px, 3.6vw, 14px);
+  font-size: 0.875rem;
   line-height: 1.85;
   color: var(--muted);
   text-wrap: pretty;
 }
-.lead--tight { margin-bottom: 36px; }
+.lead--tight { margin-bottom: 2.25rem; }
 
-.head { text-align: center; margin-bottom: clamp(32px, 9vw, 46px); }
+.head { text-align: center; margin-bottom: 2.1875rem; }
 
-.rule { width: 34px; height: 1px; background: var(--line); margin: 18px auto; }
-.rule--light { width: 54px; background: rgba(246, 241, 233, .6); margin: clamp(18px, 5vw, 26px) auto; }
+.rule { width: 2.125rem; height: 1px; background: var(--line); margin: 1.125rem auto; }
+.rule--light { width: 3.375rem; background: rgba(246, 241, 233, .6); margin: 1.25rem auto; }
 
 .amp {
   display: block;
   font-style: italic;
   font-size: .54em;
-  margin: 6px 0;
+  margin: 0.375rem 0;
   color: var(--cream-2);
 }
 .amp--inline { display: inline; font-size: 1em; margin: 0; }
 
 .tag {
-  margin: 0 0 12px;
-  font-size: clamp(9px, 2.6vw, 10px);
+  margin: 0 0 0.75rem;
+  font-size: 0.625rem;
   letter-spacing: .3em;
   text-transform: uppercase;
   color: var(--accent);
@@ -311,20 +371,20 @@ a:hover { color: var(--accent-dk); }
   margin: 0;
   font-family: var(--serif);
   font-weight: 300;
-  font-size: clamp(46px, 15.5vw, 68px);
+  font-size: 3.75rem;
   line-height: .98;
   color: var(--card);
 }
 .cover__date {
   margin: 0;
-  font-size: clamp(12px, 3.6vw, 14px);
+  font-size: 0.875rem;
   letter-spacing: .26em;
   text-transform: uppercase;
   color: var(--card);
 }
 .cover__hint {
-  margin: clamp(20px, 6vw, 28px) 0 0;
-  font-size: clamp(10px, 2.8vw, 11px);
+  margin: 1.4375rem 0 0;
+  font-size: 0.6875rem;
   letter-spacing: .3em;
   text-transform: uppercase;
   color: rgba(246, 241, 233, .72);
@@ -334,14 +394,14 @@ a:hover { color: var(--accent-dk); }
 /* ================================ AYAT ================================== */
 
 .deco--swag {
-  width: clamp(170px, 52vw, 300px);
-  margin: 0 auto clamp(22px, 6vw, 30px);
+  width: 12.6875rem;
+  margin: 0 auto 1.4375rem;
   opacity: .92;
 }
 .deco--dove {
-  width: clamp(68px, 19vw, 104px);
-  margin: 0 auto clamp(16px, 5vw, 24px);
-  filter: drop-shadow(0 6px 14px rgba(20, 16, 12, .35));
+  width: 4.625rem;
+  margin: 0 auto 1.25rem;
+  filter: drop-shadow(0 0.375rem 0.875rem rgba(20, 16, 12, .35));
 }
 
 .verse {
@@ -349,14 +409,14 @@ a:hover { color: var(--accent-dk); }
   max-width: 22ch;
   font-family: var(--serif);
   font-style: italic;
-  font-size: clamp(20px, 5.8vw, 24px);
+  font-size: 1.4375rem;
   line-height: 1.6;
   color: #4A4038;
   text-wrap: pretty;
 }
 .verse__ref {
-  margin: 22px 0 0;
-  font-size: clamp(10px, 2.8vw, 11px);
+  margin: 1.375rem 0 0;
+  font-size: 0.6875rem;
   letter-spacing: .32em;
   text-transform: uppercase;
   color: var(--accent);
@@ -371,8 +431,8 @@ a:hover { color: var(--accent-dk); }
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: clamp(8px, 3vw, 72px);
-  margin-top: clamp(20px, 6vw, 44px);
+  gap: 0.75rem;
+  margin-top: 1.4375rem;
 }
 .couple__person { flex: 1 1 0; min-width: 0; }
 .couple__amp { flex: 0 0 auto; }
@@ -381,9 +441,9 @@ a:hover { color: var(--accent-dk); }
    diukur langsung dari berkas bingkainya, jadi fotonya pas di dalam elips. */
 .portrait {
   position: relative;
-  width: min(100%, 268px);
+  width: min(100%, 16.75rem);
   aspect-ratio: 420 / 525;
-  margin: 0 auto 18px;
+  margin: 0 auto 1.125rem;
 }
 .portrait__photo {
   position: absolute;
@@ -403,11 +463,11 @@ a:hover { color: var(--accent-dk); }
   margin: 0;
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(22px, 6vw, 34px);
+  font-size: 1.4375rem;
 }
 .couple__parents {
-  margin: 8px 0 0;
-  font-size: clamp(11px, 3vw, 13px);
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
   line-height: 1.65;
   color: var(--muted);
   text-wrap: pretty;
@@ -416,7 +476,7 @@ a:hover { color: var(--accent-dk); }
   margin: 0;
   font-family: var(--serif);
   font-style: italic;
-  font-size: clamp(26px, 7.5vw, 31px);
+  font-size: 1.8125rem;
   color: var(--accent);
 }
 
@@ -425,33 +485,33 @@ a:hover { color: var(--accent-dk); }
 .countdown {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: clamp(6px, 2.2vw, 10px);
-  max-width: 340px;
-  margin: clamp(24px, 7vw, 32px) auto 0;
+  gap: 0.5625rem;
+  max-width: 21.25rem;
+  margin: 1.6875rem auto 0;
 }
 .countdown__cell {
-  padding: clamp(12px, 4vw, 17px) clamp(2px, 1.5vw, 6px);
+  padding: 1rem 0.375rem;
   border: 1px solid rgba(246, 241, 233, .24);
 }
 .countdown__num {
   display: block;
   font-family: var(--serif);
-  font-size: clamp(24px, 7.5vw, 32px);
+  font-size: 1.8125rem;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .countdown__lbl {
   display: block;
-  margin-top: 6px;
-  font-size: clamp(8px, 2.4vw, 9px);
+  margin-top: 0.375rem;
+  font-size: 0.5625rem;
   letter-spacing: .2em;
   text-transform: uppercase;
   color: var(--cream);
 }
 .countdown__done {
-  margin: 24px auto 0;
+  margin: 1.5rem auto 0;
   max-width: 30ch;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.8;
   color: var(--cream);
   text-wrap: pretty;
@@ -459,47 +519,150 @@ a:hover { color: var(--accent-dk); }
 
 /* ============================ KARTU / DAFTAR ============================ */
 
-.stack { display: flex; flex-direction: column; gap: 16px; }
-.stack--wide { gap: clamp(12px, 3vw, 26px); }
+.stack { display: flex; flex-direction: column; gap: 1rem; }
+.stack--wide { gap: 0.75rem; }
 .stack--left { text-align: left; }
 
-/* Deretan kartu mendatar: selalu satu kolom (kartunya sendiri sudah melebar),
-   dan lebarnya dibatasi supaya tak melar di monitor lebar. */
-.stack--rows { max-width: 560px; margin-inline: auto; }
-
 .card { background: var(--card); border: 1px solid var(--line-2); }
-/* Kartu acara mendatar: blok jam di kiri, dipisah garis, keterangan di kanan. */
-.card--event {
+
+/* ==================== SUSUNAN ACARA: GARIS WAKTU BERKELOK ================
+   Gambar dan keterangan berselang kiri-kanan, dipisah garis tegak di tengah.
+
+   TIGA KOLOM: 1fr / var(--node-w) / 1fr. Kolom tengahnya lebar TETAP, bukan
+   `auto`. Itu syaratnya: dengan dua kolom tepi yang sama-sama 1fr, titik
+   tengah kolom tengah jatuh persis di 50% - jadi garis, kilau, dan medali
+   tetap segaris berapa pun panjang teks atau lebar gambarnya. Kalau kolom
+   tengah dibiarkan `auto`, lebarnya ikut isinya dan sumbunya bergeser.
+
+   TINGGI GAMBAR DIPATOK (bukan mengikuti lebar kolom lewat aspect-ratio).
+   Bagian ini harus muat satu layar seperti bagian lain, dan tinggi baris
+   hanya bisa dihitung kalau gambarnya punya tinggi yang pasti. Konsekuensinya
+   gambar dipotong `cover`, sehingga foto mendatar paling cocok di sini.
+
+   Gambar dan teks sama-sama merapat KE GARIS (lewat margin auto), bukan ke
+   tepi layar. Tanpa itu, di monitor lebar keduanya terlempar jauh ke pinggir
+   dan garis tengahnya jadi berdiri sendirian di ruang kosong. */
+
+/* Wadah <defs> SVG: harus ikut terpasang di halaman (bukan display:none)
+   supaya gradasinya masih bisa dirujuk, tapi tak boleh memakan ruang. */
+.svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.agenda {
+  --node-w: 2.25rem;
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 46rem;
   display: flex;
-  align-items: center;
-  gap: clamp(12px, 4vw, 22px);
-  padding: clamp(14px, 4vw, 20px) clamp(14px, 4vw, 22px);
+  flex-direction: column;
+  gap: 1rem;
   text-align: left;
 }
-.event__time {
-  flex: 0 0 auto;
-  margin: 0;
-  min-width: clamp(72px, 21vw, 96px);
-  padding-right: clamp(12px, 4vw, 22px);
-  border-right: 1px solid var(--line-2);
-  text-align: center;
+
+.agenda__row {
+  display: grid;
+  grid-template-columns: 1fr var(--node-w) 1fr;
+  column-gap: 0.5rem;
+  align-items: start;
 }
-.event__hour {
+
+/* Ketiganya WAJIB dikunci ke baris 1. Pada baris genap urutan DOM-nya jadi
+   kolom 3 -> 2 -> 1, dan penempatan otomatis grid tidak pernah mundur ke
+   kolom yang sudah dilewati: tiap anak justru dilempar ke baris BARU, jadi
+   gambar, garis, dan teks tersusun ke bawah alih-alih bersebelahan. */
+.agenda__row > * { grid-row: 1; }
+
+/* Ganjil: gambar kiri, keterangan kanan. Genap: kebalikannya. */
+.agenda__row:nth-child(odd)  .agenda__media { grid-column: 1; margin-left: auto; }
+.agenda__row:nth-child(odd)  .agenda__text  { grid-column: 3; margin-right: auto; }
+.agenda__row:nth-child(even) .agenda__text  { grid-column: 1; margin-left: auto; text-align: right; }
+.agenda__row:nth-child(even) .agenda__media { grid-column: 3; margin-right: auto; }
+.agenda__node { grid-column: 2; }
+
+/* ----------------------------------------------------------- gambar */
+
+.agenda__media {
+  /* margin: 0, BUKAN margin-block: 0. Bawaan <figure> adalah `1em 40px`;
+     kalau hanya sisi tegaknya yang ditolkan, sisa 40px kiri-kanan mendorong
+     gambar baris genap keluar layar di HP. */
+  margin: 0;
+  width: 100%;
+  max-width: 15rem;
+  background: var(--card);
+  border: 1px solid var(--line-2);
+  padding: 0.25rem;
+  box-shadow: 0 0.25rem 0.875rem rgba(62, 54, 46, .1);
+}
+.agenda__media img {
+  width: 100%;
+  height: 4.5rem;
+  object-fit: cover;
+}
+
+/* -------------------------------------------------- kolom tengah + garis */
+
+.agenda__node {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;      /* kilau di puncak baris, bukan di tengahnya */
+  align-self: stretch;          /* setinggi baris, jadi garisnya bisa penuh */
+}
+/* Warnanya lewat CSS, bukan atribut fill="var(--gold)": var() di dalam
+   atribut presentasi SVG tidak dijamin jalan di semua peramban. */
+.agenda__spark { width: 0.8125rem; height: auto; }
+.agenda__spark path { fill: var(--gold); }
+
+/* Garis tegaknya dilukis per BARIS, bukan satu garis panjang di wadahnya:
+   dengan begitu celah di sekitar kilau muncul sendiri di tiap sambungan.
+   `bottom` negatif membuatnya menyeberangi jarak antar baris. */
+.agenda__node::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 1.25rem;
+  bottom: -1rem;
+  width: 1px;
+  background: var(--line);
+}
+.agenda__row:last-child .agenda__node::after { bottom: 0.375rem; }
+
+/* -------------------------------------------------------- medali + teks */
+
+.agenda__text { width: 100%; max-width: 15rem; }
+
+.agenda__seal {
   display: block;
-  font-family: var(--serif);
-  font-size: clamp(23px, 6.6vw, 30px);
-  line-height: 1;
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 0.375rem;
+  filter: drop-shadow(0 0.125rem 0.1875rem rgba(62, 54, 46, .3));
+}
+/* Medali selalu menempel ke sisi yang menghadap garis. */
+.agenda__row:nth-child(even) .agenda__seal { margin-left: auto; }
+
+.agenda__time {
+  margin: 0;
+  font-size: 0.625rem;
+  letter-spacing: .2em;
+  color: var(--olive);
   font-variant-numeric: tabular-nums;
 }
-.event__unit {
-  display: block;
-  margin-top: 5px;
-  font-size: clamp(9px, 2.4vw, 10px);
-  letter-spacing: .22em;
-  color: var(--olive);
+.agenda__title {
+  margin: 0.1875rem 0 0.25rem;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 1.0625rem;
+  line-height: 1.2;
 }
-.event__body { flex: 1 1 auto; min-width: 0; }
-.event__body .tag { margin-bottom: 6px; }
+
+/* Di HP tiap kolom tepi cuma ~9rem. Nama tempat dengan ukuran bawaannya
+   (.event__place 0.875rem) pecah jadi tiga baris di lebar itu dan tiga baris
+   x tiga acara sudah cukup untuk mendorong bagian ini keluar dari satu layar.
+   Ukuran bawaannya dikembalikan di blok desktop. */
+.agenda .event__place { font-size: 0.8125rem; }
+.agenda .event__addr  { margin-top: 0.25rem; font-size: 0.75rem; line-height: 1.55; }
 /* Kartu lokasi berlatar foto tempatnya sendiri.
 
    Fotonya lewat `background-image`, bukan <img> di dalam kartu: begitu
@@ -516,7 +679,7 @@ a:hover { color: var(--accent-dk); }
   display: flex;
   flex-direction: column;
   justify-content: flex-end;   /* isi menepi ke bawah, tempat kerudung paling pekat */
-  min-height: clamp(150px, 24svh, 240px);
+  min-height: 11.1875rem;
   background-color: #2a211b;   /* terlihat kalau fotonya belum termuat */
   background-size: cover;
   background-position: center;
@@ -553,22 +716,22 @@ a:hover { color: var(--accent-dk); }
   background: var(--card);
   color: var(--ink);
 }
-.card--bank  { padding: clamp(18px, 5vw, 24px); }
-.card__body  { padding: clamp(18px, 5vw, 22px) clamp(18px, 5vw, 22px) clamp(20px, 5.5vw, 24px); }
+.card--bank  { padding: 1.25rem; }
+.card__body  { padding: 1.25rem 1.25rem 1.3125rem; }
 
-/* (gaya .event__time untuk kartu mendatar ada di blok .card--event di atas) */
-.event__place { margin: 0; font-size: clamp(13px, 3.7vw, 14px); font-weight: 500; }
-.event__addr  { margin: 6px 0 0; font-size: clamp(12px, 3.4vw, 13px); line-height: 1.7; color: var(--muted); }
-.card__body .event__addr { margin-bottom: 18px; }
+/* Dipakai bersama oleh kartu lokasi dan garis waktu Susunan Acara. */
+.event__place { margin: 0; font-size: 0.875rem; font-weight: 500; }
+.event__addr  { margin: 0.375rem 0 0; font-size: 0.8125rem; line-height: 1.7; color: var(--muted); }
+.card__body .event__addr { margin-bottom: 1.125rem; }
 
 .bank__num {
   margin: 0;
   font-family: var(--serif);
-  font-size: clamp(23px, 6.8vw, 27px);
+  font-size: 1.6875rem;
   letter-spacing: .04em;
   font-variant-numeric: tabular-nums;
 }
-.bank__name { margin: 6px 0 16px; font-size: 13px; color: var(--muted); }
+.bank__name { margin: 0.375rem 0 1rem; font-size: 0.8125rem; color: var(--muted); }
 
 /* ============================== CERITA KAMI ============================= */
 
@@ -591,7 +754,7 @@ a:hover { color: var(--accent-dk); }
   padding: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(7px, 2vw, 20px);
+  gap: 0.5rem;
   align-items: stretch;
 }
 .timeline__item {
@@ -600,7 +763,7 @@ a:hover { color: var(--accent-dk); }
   justify-content: flex-end;       /* teks di bawah: di situ kerudungnya paling pekat */
   /* min-height diikat ke tinggi layar: tanpa ini kartunya menyusut setinggi
      teksnya saja - di desktop jadi melebar mendatar, bukan kartu tinggi. */
-  min-height: clamp(260px, 56svh, 560px);
+  min-height: 26.0625rem;
   /* warna dasar: yang terlihat kalau fotonya belum termuat, dan yang mengisi
      sisa bingkai kalau rasio fotonya tak persis sama dengan kartunya */
   background-color: #2a211b;
@@ -608,7 +771,7 @@ a:hover { color: var(--accent-dk); }
   background-position: center;
   background-size: cover;
   border: 1px solid rgba(246, 241, 233, .17);
-  padding: clamp(14px, 3.2vw, 28px) clamp(9px, 2.4vw, 20px);
+  padding: 0.875rem 0.5625rem;
   text-align: center;
   position: relative;
   overflow: clip;                  /* clip, bukan hidden - lihat catatan di README */
@@ -657,22 +820,22 @@ a:hover { color: var(--accent-dk); }
   position: relative;
 }
 .timeline__year {
-  margin: 0 0 clamp(8px, 2.2vw, 16px);
+  margin: 0 0 0.5625rem;
   font-family: var(--serif);
   font-style: italic;
-  font-size: clamp(19px, 5.4vw, 32px);
+  font-size: 1.3125rem;
   line-height: 1;
   color: var(--cream-2);
 }
 .timeline__head {
-  margin: 0 0 clamp(6px, 1.8vw, 12px);
-  font-size: clamp(11px, 3.1vw, 15px);
+  margin: 0 0 0.4375rem;
+  font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.35;
 }
 .timeline__text {
   margin: 0;
-  font-size: clamp(10px, 2.8vw, 13px);
+  font-size: 0.6875rem;
   line-height: 1.65;
   color: rgba(246, 241, 233, .86);   /* dinaikkan dari .72: sekarang di atas foto */
   text-wrap: pretty;
@@ -691,7 +854,7 @@ a:hover { color: var(--accent-dk); }
   overflow-y: visible;             /* bayangan kartu saat hover tak terpotong */
   /* Ruang ekstra atas-bawah: kartu yang dimiringkan + digeser naik-turun
      butuh tempat, kalau tidak sudutnya terpotong tepi section. */
-  padding-block: clamp(20px, 3.4vw, 34px);
+  padding-block: 1.25rem;
 }
 
 .gallery__track {
@@ -718,16 +881,16 @@ a:hover { color: var(--accent-dk); }
      .gallery__frame  pemotong, supaya foto yang membesar tak melewati bingkai */
 .gallery__item {
   flex: 0 0 auto;
-  width: clamp(150px, 44vw, 280px);
-  margin: 0 clamp(10px, 2.4vw, 18px) 0 0;
+  width: 10.75rem;
+  margin: 0 0.625rem 0 0;
 }
 
 .gallery__card {
   background: #FFFCF7;
   border: 1px solid var(--line-2);
   /* bawah lebih tebal: proporsi foto polaroid */
-  padding: clamp(7px, 1.8vw, 10px) clamp(7px, 1.8vw, 10px) clamp(22px, 5vw, 34px);
-  box-shadow: 0 8px 20px rgba(62, 54, 46, .12);
+  padding: 0.4375rem 0.4375rem 1.375rem;
+  box-shadow: 0 0.5rem 1.25rem rgba(62, 54, 46, .12);
   transition: transform .55s cubic-bezier(.2, .7, .3, 1), box-shadow .5s ease;
 }
 .gallery__frame { display: block; overflow: hidden; }
@@ -735,18 +898,18 @@ a:hover { color: var(--accent-dk); }
 /* Kemiringan & naik-turun. Polanya berulang tiap 6 kartu (6n+1..6n+6) supaya
    set kedua - yang cuma salinan - persis sama, jadi sambungan loop-nya tetap
    tak terlihat. */
-.gallery__item:nth-child(6n+1) .gallery__card { transform: rotate(-2.4deg) translateY(7px); }
-.gallery__item:nth-child(6n+2) .gallery__card { transform: rotate(1.8deg)  translateY(-10px); }
-.gallery__item:nth-child(6n+3) .gallery__card { transform: rotate(-1.1deg) translateY(4px); }
-.gallery__item:nth-child(6n+4) .gallery__card { transform: rotate(2.6deg)  translateY(-7px); }
-.gallery__item:nth-child(6n+5) .gallery__card { transform: rotate(-1.9deg) translateY(9px); }
-.gallery__item:nth-child(6n+6) .gallery__card { transform: rotate(1.3deg)  translateY(-5px); }
+.gallery__item:nth-child(6n+1) .gallery__card { transform: rotate(-2.4deg) translateY(0.4375rem); }
+.gallery__item:nth-child(6n+2) .gallery__card { transform: rotate(1.8deg)  translateY(-0.625rem); }
+.gallery__item:nth-child(6n+3) .gallery__card { transform: rotate(-1.1deg) translateY(0.25rem); }
+.gallery__item:nth-child(6n+4) .gallery__card { transform: rotate(2.6deg)  translateY(-0.4375rem); }
+.gallery__item:nth-child(6n+5) .gallery__card { transform: rotate(-1.9deg) translateY(0.5625rem); }
+.gallery__item:nth-child(6n+6) .gallery__card { transform: rotate(1.3deg)  translateY(-0.3125rem); }
 
 /* Saat disentuh: kartunya ditegakkan dan sedikit terangkat. Ditaruh SETELAH
    aturan nth-child di atas - kekhususannya sama, jadi yang belakangan menang. */
 .gallery__item:hover .gallery__card {
-  transform: rotate(0deg) translateY(-10px);
-  box-shadow: 0 18px 34px rgba(62, 54, 46, .22);
+  transform: rotate(0deg) translateY(-0.625rem);
+  box-shadow: 0 1.125rem 2.125rem rgba(62, 54, 46, .22);
 }
 .gallery__item img {
   width: 100%;
@@ -756,7 +919,7 @@ a:hover { color: var(--accent-dk); }
   /* Tinggi diikat ke tinggi layar (svh), bukan rasio tetap: dengan rasio
      tetap kartunya jadi mungil dan halaman terasa kosong, karena section ini
      setinggi satu layar penuh. */
-  height: clamp(140px, 32svh, 300px);
+  height: 14.875rem;
   object-fit: cover;
   transition: transform .6s cubic-bezier(.2, .7, .3, 1);
 }
@@ -764,10 +927,10 @@ a:hover { color: var(--accent-dk); }
 
 /* ================================= RSVP ================================= */
 
-.form { display: flex; flex-direction: column; gap: 14px; }
-.field { display: flex; flex-direction: column; gap: 6px; }
+.form { display: flex; flex-direction: column; gap: 0.875rem; }
+.field { display: flex; flex-direction: column; gap: 0.375rem; }
 .field__label {
-  font-size: 10px;
+  font-size: 0.625rem;
   letter-spacing: .22em;
   text-transform: uppercase;
   color: var(--olive);
@@ -775,12 +938,15 @@ a:hover { color: var(--accent-dk); }
 
 .input {
   width: 100%;
-  padding: 13px 15px;
+  padding: 0.8125rem 0.9375rem;
   border: 1px solid var(--line);
   background: var(--card);
   color: var(--ink);
   font-family: var(--sans);
-  font-size: 16px;                 /* >=16px: cegah iOS auto-zoom saat fokus */
+  /* max() supaya ikut skala halaman di desktop, tapi TIDAK PERNAH turun di
+     bawah 16px: di bawah itu iOS memperbesar layar sendiri saat kolom
+     disentuh, dan tata letaknya jadi berantakan. */
+  font-size: max(16px, 1rem);
   line-height: 1.5;
   border-radius: 0;
   outline: none;
@@ -788,30 +954,30 @@ a:hover { color: var(--accent-dk); }
   appearance: none;
 }
 .input:focus { border-color: var(--accent); }
-.input--area { resize: vertical; min-height: 104px; line-height: 1.7; }
+.input--area { resize: vertical; min-height: 6.5rem; line-height: 1.7; }
 
 select.input {
   background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%),
                     linear-gradient(135deg, var(--accent) 50%, transparent 50%);
-  background-position: calc(100% - 19px) calc(50% + 1px), calc(100% - 14px) calc(50% + 1px);
-  background-size: 5px 5px, 5px 5px;
+  background-position: calc(100% - 1.1875rem) calc(50% + 1px), calc(100% - 0.875rem) calc(50% + 1px);
+  background-size: 0.3125rem 0.3125rem, 0.3125rem 0.3125rem;
   background-repeat: no-repeat;
-  padding-right: 40px;
+  padding-right: 2.5rem;
 }
 
-.form__note { margin: 4px 0 0; text-align: center; font-size: 12px; color: var(--olive); min-height: 1.2em; }
+.form__note { margin: 0.25rem 0 0; text-align: center; font-size: 0.75rem; color: var(--olive); min-height: 1.2em; }
 .form__note--error { color: #A2503C; }
 
 /* ================================ UCAPAN ================================ */
 
-.wishes { display: flex; flex-direction: column; gap: 14px; }
-.wish { border-left: 1px solid var(--line); padding: 4px 0 4px 18px; }
-.wish__name { margin: 0 0 6px; font-size: 13px; font-weight: 500; }
+.wishes { display: flex; flex-direction: column; gap: 0.875rem; }
+.wish { border-left: 1px solid var(--line); padding: 0.25rem 0 0.25rem 1.125rem; }
+.wish__name { margin: 0 0 0.375rem; font-size: 0.8125rem; font-weight: 500; }
 .wish__msg {
   margin: 0;
   font-family: var(--serif);
   font-style: italic;
-  font-size: clamp(15px, 4.2vw, 16px);
+  font-size: 1rem;
   line-height: 1.65;
   color: var(--muted);
   text-wrap: pretty;
@@ -821,14 +987,14 @@ select.input {
 /* =============================== PENUTUP ================================ */
 
 .closing__text {
-  margin: 0 auto 26px;
+  margin: 0 auto 1.625rem;
   max-width: 28ch;
-  font-size: clamp(12px, 3.5vw, 13px);
+  font-size: 0.8125rem;
   line-height: 1.9;
   color: rgba(246, 241, 233, .86);
   text-wrap: pretty;
 }
-.closing__names { margin: 0; font-family: var(--serif); font-size: clamp(34px, 10vw, 44px); line-height: 1.1; }
+.closing__names { margin: 0; font-family: var(--serif); font-size: 2.4375rem; line-height: 1.1; }
 
 /* ================================ TOMBOL ================================ */
 
@@ -836,13 +1002,13 @@ select.input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;                /* target sentuh nyaman */
-  padding: 11px 22px;
+  min-height: 2.75rem;                /* target sentuh nyaman */
+  padding: 0.6875rem 1.375rem;
   border: 1px solid var(--accent);
   background: transparent;
   color: var(--accent);
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 0.6875rem;
   letter-spacing: .22em;
   text-transform: uppercase;
   cursor: pointer;
@@ -853,7 +1019,7 @@ select.input {
 .btn--solid { background: var(--accent); border-color: var(--accent); color: var(--card); }
 .btn--solid:hover { background: var(--accent-dk); border-color: var(--accent-dk); }
 .btn--block { width: 100%; letter-spacing: .26em; }
-.btn--sm { padding: 9px 18px; font-size: 10px; }
+.btn--sm { padding: 0.5625rem 1.125rem; font-size: 0.625rem; }
 .btn[disabled] { opacity: .5; cursor: default; }
 
 /* ============================= TOMBOL MUSIK ============================= */
@@ -861,29 +1027,29 @@ select.input {
 .dock {
   position: fixed;
   inset-inline: 0;
-  bottom: calc(18px + var(--safe-b));
+  bottom: calc(1.125rem + var(--safe-b));
   z-index: 40;
   pointer-events: none;
 }
 .dock__inner {
-  padding-inline: clamp(14px, 4vw, 44px);
+  padding-inline: 1rem;
   display: flex;
   justify-content: flex-end;
 }
 .musicBtn {
   pointer-events: auto;
-  width: 46px;
-  height: 46px;
+  width: 2.875rem;
+  height: 2.875rem;
   border-radius: 999px;
   border: 1px solid rgba(169, 118, 92, .4);
   background: rgba(246, 241, 233, .92);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(0.375rem);
+  backdrop-filter: blur(0.375rem);
   color: var(--accent);
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(62, 54, 46, .16);
+  box-shadow: 0 0.375rem 1.125rem rgba(62, 54, 46, .16);
   display: grid;
   place-items: center;
   -webkit-tap-highlight-color: transparent;
@@ -915,12 +1081,12 @@ select.input {
 .cupid__img {
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 10px 18px rgba(62, 54, 46, .22));
+  filter: drop-shadow(0 0.625rem 1.125rem rgba(62, 54, 46, .22));
 }
 
 /* Cupid pertama: agak besar, menghadap kanan. */
 .cupid--a {
-  width: clamp(52px, 11vw, 96px);
+  width: 3.25rem;
   transform: translate3d(3vw, 55vh, 0);
   animation: cupidRoamA 42s ease-in-out infinite;
 }
@@ -929,7 +1095,7 @@ select.input {
 /* Cupid kedua: lebih kecil dan sedikit pudar supaya terasa lebih jauh,
    gambarnya dicerminkan agar menghadap kiri. */
 .cupid--b {
-  width: clamp(42px, 9vw, 78px);
+  width: 2.625rem;
   opacity: .85;
   transform: translate3d(86vw, 24vh, 0);
   animation: cupidRoamB 55s ease-in-out infinite;
@@ -939,12 +1105,12 @@ select.input {
 /* Kepakan kecil. Pencerminan ikut ditulis di dalam keyframe-nya supaya tidak
    saling menimpa dengan transform jalur terbang di elemen induk. */
 @keyframes cupidBob {
-  0%, 100% { transform: translateY(-5px) rotate(-3deg); }
-  50%      { transform: translateY(5px)  rotate(3deg); }
+  0%, 100% { transform: translateY(-0.3125rem) rotate(-3deg); }
+  50%      { transform: translateY(0.3125rem)  rotate(3deg); }
 }
 @keyframes cupidBobFlip {
-  0%, 100% { transform: translateY(-4px) rotate(3deg)  scaleX(-1); }
-  50%      { transform: translateY(4px)  rotate(-3deg) scaleX(-1); }
+  0%, 100% { transform: translateY(-0.25rem) rotate(3deg)  scaleX(-1); }
+  50%      { transform: translateY(0.25rem)  rotate(-3deg) scaleX(-1); }
 }
 
 /* Jalur berkeliling. Keyframe 0% dan 100% sengaja sama supaya loop-nya mulus.
@@ -998,7 +1164,7 @@ select.input {
 
 .has-reveal .screen:not(.is-active) [data-px] > * {
   opacity: 0;
-  transform: translateY(26px);
+  transform: translateY(1.625rem);
 }
 .has-reveal .screen:not(.is-active) .stack > *,
 .has-reveal .screen:not(.is-active) .timeline__item,
@@ -1007,7 +1173,7 @@ select.input {
 .has-reveal .screen:not(.is-active) .wish,
 .has-reveal .screen:not(.is-active) .field {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(1rem);
 }
 
 .has-reveal .screen.is-active [data-px] > *,
@@ -1079,24 +1245,24 @@ select.input {
 @keyframes storySpin {
   0% {
     opacity: 0;
-    transform: perspective(1000px) translateZ(-380px) rotateY(-1080deg);
+    transform: perspective(62.5rem) translateZ(-23.75rem) rotateY(-1080deg);
     animation-timing-function: linear;
   }
   10% { opacity: 1; }
   62% {
-    transform: perspective(1000px) translateZ(-120px) rotateY(-380deg);
+    transform: perspective(62.5rem) translateZ(-7.5rem) rotateY(-380deg);
     animation-timing-function: cubic-bezier(.16, .66, .22, 1);
   }
   100% {
     opacity: 1;
-    transform: perspective(1000px) translateZ(0) rotateY(0deg);
+    transform: perspective(62.5rem) translateZ(0) rotateY(0deg);
   }
 }
 
 /* Teks muncul setelah kartunya diam. Selama putaran, `both` menahan keadaan
    awal (transparan), jadi teksnya benar-benar tersembunyi dulu. */
 @keyframes storyText {
-  from { opacity: 0; transform: translateY(9px); }
+  from { opacity: 0; transform: translateY(0.5625rem); }
   to   { opacity: 1; transform: none; }
 }
 
@@ -1128,7 +1294,7 @@ select.input {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: clamp(28px, 8vw, 44px);
+  padding: 1.9375rem;
   color: var(--ink);
   /* Lapisan emas 50% DI DALAM tumpukan latar, bukan sebagai elemen tersendiri:
      dengan begitu ia otomatis berada di bawah hiasan bunga dan teksnya -
@@ -1154,15 +1320,15 @@ select.input {
 /* Pohon sakura mengapit kiri-kanan. Sengaja dibiarkan menjorok keluar tepi
    supaya tidak memakan ruang teks di layar sempit, dan pangkalnya tertutup
    hamparan bunga di bawah supaya terlihat tertanam. */
-.deco--tree { position: absolute; bottom: 12%; width: clamp(104px, 30vw, 300px); }
+.deco--tree { position: absolute; bottom: 12%; width: 7.3125rem; }
 /* Geserannya px ter-clamp, bukan persen: persen membuat pohon terdorong
    terlalu jauh keluar layar di monitor lebar (sampai 200px tak terlihat),
    sementara di HP justru kurang menepi dan menabrak teks. */
-.deco--tree-l { left: clamp(-96px, -14vw, -30px); }
-.deco--tree-r { right: clamp(-96px, -14vw, -30px); transform: scaleX(-1); }
+.deco--tree-l { left: -3.4375rem; }
+.deco--tree-r { right: -3.4375rem; transform: scaleX(-1); }
 
 /* Semak bunga di kedua sudut bawah - lapisan paling depan. */
-.deco--bush { position: absolute; bottom: -2%; width: clamp(170px, 54vw, 420px); }
+.deco--bush { position: absolute; bottom: -2%; width: 13.1875rem; }
 .deco--bush-l { left: -10%; }
 .deco--bush-r { right: -10%; transform: scaleX(-1); }
 
@@ -1175,7 +1341,7 @@ select.input {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: clamp(150px, 26vh, 260px);
+  height: 12.125rem;
   /* DUA lapis dengan tinggi berbeda -> lebar ubinnya berbeda pula, sehingga
      pengulangannya tidak pernah sejajar. Satu lapis saja terlihat jelas
      berulang: tiga gundukan kembar dengan celah seragam di antaranya. */
@@ -1185,7 +1351,7 @@ select.input {
 }
 
 /* Layar pendek (HP diputar): hamparan bunga bawah akan menabrak tombol. */
-@media (max-height: 560px) {
+@media (max-height: 560px) and (max-width: 759px) {
   .deco--bed { display: none; }
 }
 
@@ -1193,22 +1359,22 @@ select.input {
   margin: 0;
   font-family: var(--serif);
   font-weight: 300;
-  font-size: clamp(44px, 14.5vw, 64px);
+  font-size: 3.5625rem;
   line-height: 1;
 }
 .gate__names .amp { color: var(--accent); }
 
 .gate__date {
-  margin: clamp(18px, 5vw, 24px) 0 0;
-  font-size: clamp(11px, 3.2vw, 13px);
+  margin: 1.25rem 0 0;
+  font-size: 0.75rem;
   letter-spacing: .26em;
   text-transform: uppercase;
   color: var(--muted);
 }
-.gate__to { margin-top: clamp(26px, 8vw, 36px); }
+.gate__to { margin-top: 1.9375rem; }
 .gate__toLabel {
-  margin: 0 0 6px;
-  font-size: 11px;
+  margin: 0 0 0.375rem;
+  font-size: 0.6875rem;
   letter-spacing: .28em;
   text-transform: uppercase;
   color: var(--olive);
@@ -1216,10 +1382,10 @@ select.input {
 .gate__toName {
   margin: 0;
   font-family: var(--serif);
-  font-size: clamp(21px, 6vw, 26px);
+  font-size: 1.4375rem;
   overflow-wrap: anywhere;
 }
-.gate__btn { margin-top: clamp(28px, 8vw, 38px); }
+.gate__btn { margin-top: 1.9375rem; }
 
 .gate.is-closing { opacity: 0; transform: scale(1.06); pointer-events: none; }
 
@@ -1250,20 +1416,20 @@ select.input {
 /* Isi halaman hanyut naik dengan laju tetap; opacity hanya untuk ujung-ujungnya,
    saat halaman memang sedang masuk atau sudah hampir keluar layar. */
 @keyframes pxContent {
-  0%   { opacity: 0; transform: translate3d(0,  52px, 0); }
-  18%  { opacity: 1; transform: translate3d(0,  33px, 0); }
-  82%  { opacity: 1; transform: translate3d(0, -33px, 0); }
-  100% { opacity: 0; transform: translate3d(0, -52px, 0); }
+  0%   { opacity: 0; transform: translate3d(0,  3.25rem, 0); }
+  18%  { opacity: 1; transform: translate3d(0,  2.0625rem, 0); }
+  82%  { opacity: 1; transform: translate3d(0, -2.0625rem, 0); }
+  100% { opacity: 0; transform: translate3d(0, -3.25rem, 0); }
 }
 
 /* Teks sampul bergerak paling jauh, jadi foto di belakangnya terasa diam. */
 @keyframes pxCoverText {
   from { opacity: 1; transform: translate3d(0, 0, 0); }
-  to   { opacity: 0; transform: translate3d(0, -120px, 0); }
+  to   { opacity: 0; transform: translate3d(0, -7.5rem, 0); }
 }
 
-@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@keyframes bob    { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(0.875rem); } to { opacity: 1; transform: none; } }
+@keyframes bob    { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(0.4375rem); } }
 @keyframes spin   { to { transform: rotate(360deg); } }
 
 /* Jalur utama: animasi digerakkan langsung oleh scroll.
@@ -1277,117 +1443,196 @@ select.input {
 /* ============================== LAYAR LEBAR ============================= */
 
 @media (min-width: 760px) {
+  /* Skala desktop: ikut sisi tersempit dari acuan 1920x960.
+     Lihat catatan panjang di aturan `html` paling atas. */
+  html {
+    font-size: clamp(12px, min(calc(100vw / 120), calc(100svh / 60)), 32px);
+  }
+
   :root {
     /* Isi sudah dipusatkan tegak lurus, jadi padding tegak cukup jadi jarak
        aman minimum. Kalau dibiarkan selega dulu (132px), Susunan Acara dan
        RSVP tak muat satu layar di laptop 900px. */
-    --pad-y: clamp(36px, 3.5vw, 64px);
-    --pad-x: clamp(38px, 5vw, 80px);
+    --pad-y: 2.8125rem;
+    --pad-x: 4rem;
   }
-  .head { margin-bottom: clamp(20px, 3vw, 36px); }
+  .head { margin-bottom: 2.25rem; }
 
-  .screen--gallery { padding-inline: clamp(28px, 4vw, 64px); }
-  .cover__layer    { padding: 0 clamp(38px, 5vw, 80px) clamp(56px, 7vw, 96px); }
+  .screen--gallery { padding-inline: 3.1875rem; }
+  .cover__layer    { padding: 0 4rem 5.625rem; }
 
   /* Tipografi naik satu tingkat supaya tidak tenggelam di layar lebar. */
-  .title          { font-size: clamp(35px, 3.6vw, 52px); }
-  .lead           { font-size: 15px; max-width: 46ch; }
-  .verse          { font-size: clamp(24px, 2.8vw, 34px); max-width: 26ch; }
-  .cover__names   { font-size: clamp(68px, 8vw, 124px); }
-  .gate__names    { font-size: clamp(64px, 7vw, 108px); }
-  .closing__names { font-size: clamp(44px, 5vw, 76px); }
-  .closing__text  { font-size: 15px; max-width: 40ch; }
+  .title          { font-size: 2.875rem; }
+  .lead           { font-size: 0.9375rem; max-width: 46ch; }
+  .verse          { font-size: 2.125rem; max-width: 26ch; }
+  .cover__names   { font-size: 6.375rem; }
+  .gate__names    { font-size: 5.625rem; }
+  .closing__names { font-size: 4rem; }
+  .closing__text  { font-size: 0.9375rem; max-width: 40ch; }
 
   /* Kedua mempelai berdampingan. */
   .couple {
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: clamp(28px, 5vw, 72px);
+    gap: 4rem;
   }
-  .couple__person { flex: 1 1 0; max-width: 360px; }
-  .couple__amp    { flex: 0 0 auto; font-size: clamp(30px, 3vw, 42px); }
-  .portrait       { width: min(100%, 330px); }
+  .couple__person { flex: 1 1 0; max-width: 22.5rem; }
+  .couple__amp    { flex: 0 0 auto; font-size: 2.375rem; }
+  .portrait       { width: min(100%, 20.625rem); }
 
-  /* Kartu acara / lokasi / rekening berjajar. auto-fit menyesuaikan sendiri:
-     3 kartu acara jadi 3 kolom, 2 kartu lokasi jadi 2 kolom. */
-  .stack:not(.stack--rows) {
+  /* Susunan acara: semuanya dilonggarkan, gambarnya jadi hampir dua kali
+     tinggi HP. Tiga baris x ~11.9rem + jarak masih di bawah ruang yang
+     tersisa sesudah judul, jadi bagian ini tetap muat satu layar. */
+  .agenda            { --node-w: 3.5rem; gap: 1.5rem; max-width: 58rem; }
+  .agenda__row       { column-gap: 1.5rem; }
+  .agenda__media     { max-width: 19rem; padding: 0.375rem; }
+  .agenda__media img { height: 12rem; }
+  .agenda__node::after { top: 1.625rem; bottom: -1.5rem; }
+  .agenda__spark     { width: 1.0625rem; }
+  .agenda__text      { max-width: 17rem; }
+  .agenda__seal      { width: 3rem; height: 3rem; margin-bottom: 0.5rem; }
+  .agenda__time      { font-size: 0.6875rem; }
+  .agenda__title     { margin: 0.25rem 0 0.375rem; font-size: 1.375rem; }
+  .agenda .event__place { font-size: 0.875rem; }
+  .agenda .event__addr  { margin-top: 0.375rem; font-size: 0.8125rem; line-height: 1.7; }
+
+  /* Kartu lokasi / rekening berjajar. auto-fit menyesuaikan sendiri:
+     2 kartu lokasi jadi 2 kolom, 2 kartu rekening jadi 2 kolom. */
+  .stack {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17.5rem), 1fr));
     align-items: stretch;
   }
 
   /* Cerita kami: tiga kolom, tahun pindah ke atas teksnya. */
   /* Lebar dibatasi supaya kolomnya tetap ramping -> kartunya benar-benar
      tinggi, bukan kotak melebar. */
-  .timeline       { max-width: 860px; margin-inline: auto; gap: clamp(16px, 2vw, 28px); }
-  .timeline__text { font-size: 14px; }
+  .timeline       { max-width: 53.75rem; margin-inline: auto; gap: 1.625rem; }
+  .timeline__text { font-size: 0.875rem; }
 
   /* Kartu galeri sedikit lebih besar di layar lebar. */
-  .gallery__item { width: clamp(220px, 18vw, 300px); }
-  .gallery__card { padding-bottom: clamp(30px, 2.6vw, 42px); }
+  .gallery__item { width: 14.375rem; }
+  .gallery__card { padding-bottom: 2.0625rem; }
 
   /* Hitung mundur lebih lapang. */
-  .countdown       { max-width: 560px; gap: clamp(10px, 1.4vw, 18px); }
-  .countdown__cell { padding: clamp(18px, 2vw, 26px) 8px; }
-  .countdown__num  { font-size: clamp(32px, 3.4vw, 48px); }
+  .countdown       { max-width: 35rem; gap: 1.125rem; }
+  .countdown__cell { padding: 1.625rem 0.5rem; }
+  .countdown__num  { font-size: 2.75rem; }
 
   /* Form tetap sempit (kolom isian panjang justru susah dibaca);
      ucapan jadi dua kolom. */
-  .form   { max-width: 560px; margin-inline: auto; }
+  .form   { max-width: 35rem; margin-inline: auto; }
   .wishes {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(16px, 2vw, 28px);
+    gap: 1.625rem;
   }
+
+  /* ---- Nilai desktop untuk aturan yang dulu ikut lebar layar ----
+     Ditambahkan saat clamp() dibuang. Tiap aturan di bawah dulu tumbuh
+     mengikuti vw; sekarang dipatok ke satu nilai desktop supaya sama di
+     monitor 1366px maupun 2560px. Acuan lebar: 1280px.
+
+     Empat nilai tinggi (.card--venue, .timeline__item, .gallery__item img,
+     .deco--bed) dulu memakai svh. Acuan tingginya sengaja 800px, bukan
+     900px: laptop 1080p pada skala Windows 125% cuma punya ~768px, dan
+     dengan acuan 900px kartu Cerita Kami tidak muat satu layar di situ. */
+  .screen--closing { padding-block: 6.5rem; }
+  .rule--light { margin: 1.625rem auto; }
+  .cover__hint { margin: 1.75rem 0 0; }
+  .deco--swag { width: 18.75rem; margin: 0 auto 1.875rem; }
+  .deco--dove { width: 6.5rem; margin: 0 auto 1.5rem; }
+  .couple { margin-top: 2.75rem; }
+  .couple__name { font-size: 2.125rem; }
+  .couple__parents { font-size: 0.8125rem; }
+  .countdown { margin: 2rem auto 0; }
+  .stack--wide { gap: 1.625rem; }
+  .card--venue { min-height: 12.5rem; }
+  .card--bank { padding: 1.5rem; }
+  .card__body { padding: 1.375rem 1.375rem 1.5rem; }
+  .timeline__item { min-height: 28rem; padding: 1.75rem 1.25rem; }
+  .timeline__year { margin: 0 0 1rem; font-size: 2rem; }
+  .timeline__head { margin: 0 0 0.75rem; font-size: 0.9375rem; }
+  .gallery { padding-block: 2.125rem; }
+  .gallery__item { margin: 0 1.125rem 0 0; }
+  .gallery__card { padding: 0.625rem 0.625rem 2.125rem; }
+  .gallery__item img { height: 16.5rem; }
+  .dock__inner { padding-inline: 2.75rem; }
+  .cupid--a { width: 6rem; }
+  .cupid--b { width: 4.875rem; }
+  .gate { padding: 2.75rem; }
+  .deco--tree { width: 18.75rem; }
+  .deco--tree-l { left: -6rem; }
+  .deco--tree-r { right: -6rem; }
+  .deco--bush { width: 26.25rem; }
+  .deco--bed { height: 13rem; }
+  .gate__date { margin: 1.5rem 0 0; font-size: 0.8125rem; }
+  .gate__to { margin-top: 2.25rem; }
+  .gate__toName { font-size: 1.625rem; }
+  .gate__btn { margin-top: 2.375rem; }
 }
 
 /* ===================== LAYAR PENDEK: RAPATKAN ISI =====================
    Di bawah 800px tinggi, beberapa bagian tak muat satu halaman kalau
    jaraknya dibiarkan selega di layar tinggi. Ambangnya 800px supaya HP
-   sekelas 360x740 ikut kebagian. */
-@media (max-height: 800px) {
-  :root { --pad-y: clamp(22px, 4vw, 40px); }
+   sekelas 360x740 ikut kebagian.
 
-  .head            { margin-bottom: clamp(16px, 4vw, 28px); }
-  .stack           { gap: clamp(8px, 2vw, 14px); }
-  .card--event     { padding: clamp(12px, 3vw, 20px) clamp(12px, 3vw, 18px); }
-  .card--bank      { padding: clamp(12px, 3vw, 18px); }
-  .card__body      { padding: clamp(12px, 3vw, 16px); }
-  .timeline        { gap: clamp(7px, 1.8vw, 16px); }
-  .form            { gap: 10px; }
-  .input           { padding: 10px 14px; }
-  .input--area     { min-height: 76px; }
-  .field           { gap: 4px; }
-  .lead            { margin-top: 10px; line-height: 1.7; }
-  .deco--swag      { width: clamp(140px, 40vw, 220px); margin-bottom: 14px; }
-  .deco--dove      { width: clamp(54px, 14vw, 80px); margin-bottom: 12px; }
-  .couple          { margin-top: clamp(12px, 3vw, 24px); }
-  .countdown       { margin-top: clamp(14px, 4vw, 24px); }
-  .rule            { margin: 12px auto; }
+   KHUSUS HP (`and (max-width: 759px)`). Di desktop tidak perlu lagi:
+   skala akar sudah ikut 100svh, jadi layar pendek otomatis mengecil
+   seluruhnya. Kalau blok ini dibiarkan kena desktop, isinya jadi
+   dirapatkan DUA KALI.
+
+   ATURAN BLOK INI: hanya JARAK (padding/margin/gap). Tidak boleh ada
+   font-size, line-height, atau width di sini.
+
+   Alasannya: media query ini membaca tinggi viewport dalam CSS px, dan
+   tinggi itu ikut berubah oleh penskalaan tampilan Windows - monitor
+   1920x1080 memberi ~960px di skala 100% tapi ~768px di skala 125%.
+   Kalau ukuran huruf ikut diatur di sini, undangan yang sama tampil
+   dengan judul berbeda di dua monitor yang resolusinya sama persis.
+   Jarak yang mengencang tidak kelihatan; huruf yang mengecil kelihatan. */
+@media (max-height: 800px) and (max-width: 759px) {
+  :root { --pad-y: 1.375rem; }
+
+  .head            { margin-bottom: 1rem; }
+  .stack           { gap: 0.5rem; }
+  .agenda          { gap: 0.625rem; }
+  .agenda__media img { height: 3.75rem; }
+  .card--bank      { padding: 0.75rem; }
+  .card__body      { padding: 0.75rem; }
+  .timeline        { gap: 0.4375rem; }
+  .form            { gap: 0.625rem; }
+  .input           { padding: 0.625rem 0.875rem; }
+  .input--area     { min-height: 4.75rem; }
+  .field           { gap: 0.25rem; }
+  .lead            { margin-top: 0.625rem; }
+  .deco--swag      { margin-bottom: 0.875rem; }
+  .deco--dove      { margin-bottom: 0.75rem; }
+  .couple          { margin-top: 0.75rem; }
+  .countdown       { margin-top: 1rem; }
+  .rule            { margin: 0.75rem auto; }
 
   /* Dua yang masih meluber di layar terpendek: Cerita Kami dan RSVP. */
-  .title           { font-size: clamp(24px, 6.5vw, 32px); }
-  .timeline__item  { padding: clamp(10px, 2.6vw, 18px) clamp(8px, 2vw, 14px); }
-  .timeline__text  { font-size: 11px; line-height: 1.55; }
-  .timeline__head  { margin-bottom: 5px; }
-  .timeline__year  { margin-bottom: 8px; }
+  .timeline__item  { padding: 0.625rem 0.5rem; }
+  .timeline__head  { margin-bottom: 0.3125rem; }
+  .timeline__year  { margin-bottom: 0.5rem; }
   .form__note      { min-height: 0; }
-  .head .lead      { margin-top: 8px; }
+  .head .lead      { margin-top: 0.5rem; }
 }
 
 /* Layar sangat pendek (HP lawas 640px): satu tingkat lagi lebih rapat. */
-@media (max-height: 680px) {
-  .timeline   { gap: clamp(6px, 1.6vw, 12px); }
-  .head       { margin-bottom: clamp(12px, 3vw, 20px); }
+@media (max-height: 680px) and (max-width: 759px) {
+  .timeline   { gap: 0.375rem; }
+  .head       { margin-bottom: 0.75rem; }
 }
 
 /* Layar pendek & melebar (HP diputar): satu-halaman dilepas, terlalu sesak. */
 @media (max-height: 520px) and (orientation: landscape) {
   html { scroll-snap-type: none; }
   .screen { min-height: 0; }
-  .screen--cover { min-height: 560px; }
-  :root { --pad-y: 40px; }
+  .screen--cover { min-height: 35rem; }
+  :root { --pad-y: 2.5rem; }
 }
 
 /* ========================= HORMATI SETELAN GERAK ======================== */
