@@ -854,7 +854,19 @@ a:hover { color: var(--accent-dk); }
   background-color: var(--dark);   /* terlihat kalau fotonya belum termuat */
   background-size: cover;
   background-position: center;
-  border-color: rgba(246, 241, 233, .26);
+  /* TANPA border - `border: 0`, bukan sekadar mengganti warnanya, karena
+     garis 1px-nya datang dari aturan .card di atas.
+
+     Sebelumnya di sini ada border-color: rgba(246, 241, 233, .26) dan
+     hasilnya tidak rata, persis seperti kartu Cerita Kami: background-clip
+     bawaannya `border-box`, jadi FOTO kartunya ikut terlukis di bawah border
+     yang cuma 26% opasitas. Di kartu gereja - yang fotonya berlangit terang -
+     border-nya menyala jelas; di kartu Leviticus yang gelap ia nyaris hilang.
+     Dua kartu bersebelahan jadi terlihat beda perlakuan.
+
+     Kalau nanti ingin garis tepi lagi, tambahkan `background-clip:
+     padding-box` juga supaya fotonya berhenti di dalam border. */
+  border: 0;
   color: var(--on-dark);
   /* Teks sekundernya dipatok ke krem tembus pandang, bukan var(--muted):
      kartu ini berlatar FOTO, jadi kontrasnya tak boleh bergantung pada warna
@@ -942,7 +954,15 @@ a:hover { color: var(--accent-dk); }
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
-  border: 1px solid rgba(246, 241, 233, .17);
+  /* TANPA border. Sebelumnya ada `1px solid rgba(246, 241, 233, .17)` dan
+     hasilnya justru terlihat kotor: background-clip bawaannya `border-box`,
+     jadi FOTONYA ikut terlukis di bawah border yang cuma 17% opasitas itu.
+     Di bagian foto yang terang border-nya ikut menguning, di bagian gelap ia
+     nyaris hilang - satu garis dengan warna berubah-ubah sepanjang tepinya.
+
+     Kalau nanti ingin garis tepi lagi, jangan hanya menambah `border`:
+     tambahkan `background-clip: padding-box` juga, supaya fotonya berhenti di
+     dalam border dan garisnya berwarna rata. */
   padding: 0.875rem 0.5625rem;
   text-align: center;
   position: relative;
@@ -1610,20 +1630,16 @@ select.input {
    sebelumnya memakan 8,9MB memori dekode untuk ketajaman yang tak pernah
    terlihat. */
 
-/* --dove-y menekan seluruh ketinggian jalur terbang. Di HP ruang di atas
-   monogram hanya sekitar 141px sementara merpati terbesar 137px - tanpa
-   ditekan, merpatinya melintas tepat di balik logo dan terlihat berdesakan.
-   Di layar lebar ruangnya cukup, jadi pengalinya 1 (lihat blok 760px).
-
-   var() di dalam @keyframes diselesaikan memakai computed style ELEMENNYA,
-   jadi satu set keyframe bisa melayani dua ukuran layar - tak perlu menulis
-   keyframe kembar. Nilainya diwarisi .dove dari .doves. */
+/* Wadah jalur terbang. Tak ada lagi pengali ketinggian di sini - dulu ada
+   --dove-y yang menekan seluruh jalur supaya merpatinya tak menabrak
+   monogram. Cara itu bekerja, tapi akibatnya semua jalur jadi mendatar dan
+   seragam. Penjagaannya sekarang pindah ke SUMBU X - lihat catatan di
+   @keyframes doveCross* di bawah. */
 .doves {
   position: absolute;
   inset: 0;
   overflow: clip;
   pointer-events: none;
-  --dove-y: .42;
 }
 
 .dove {
@@ -1653,9 +1669,9 @@ select.input {
 
 /* Tiga merpati: makin kecil dan makin pudar = makin jauh. Durasi dan jeda
    dibuat tidak berkelipatan supaya susunannya tidak pernah berulang persis. */
-.dove--a { width: 4.5rem;  animation: doveCrossA 26s linear infinite; animation-delay: -14s; }
-.dove--b { width: 3.5rem;  opacity: .9;  animation: doveCrossB 34s linear infinite; animation-delay: -7s; }
-.dove--c { width: 2.75rem; opacity: .78; animation: doveCrossC 30s linear infinite; animation-delay: -26s; }
+.dove--a { width: 4.5rem;  animation: doveCrossA 26s linear infinite; animation-delay: -11s; }
+.dove--b { width: 3.5rem;  opacity: .9;  animation: doveCrossB 34s linear infinite; animation-delay: -26s; }
+.dove--c { width: 2.75rem; opacity: .78; animation: doveCrossC 30s linear infinite; animation-delay: -2.5s; }
 
 /* Yang ketiga terbang ke kiri, jadi gambarnya dicerminkan. Dipasang di
    .dove__win - bukan di .dove yang transform-nya dipakai jalur terbang,
@@ -1667,48 +1683,98 @@ select.input {
    merpatinya dinaikkan ke -40vh lalu kembali ke titik awal di ketinggian itu.
    Tanpa itu ia terlihat menyeberang balik sambil menghadap arah yang salah -
    CSS selalu meng-interpolasi, tidak bisa "melompat" begitu saja. */
-/* Seluruh jalur ditahan di atas 22vh. Blok teks gerbang mulai sekitar 33vh
-   (baris "Undangan Pernikahan"), dan walau merpatinya memang terlukis di
-   BELAKANG teks, melintas tepat di balik huruf tetap terlihat ramai.
+/* JALUR TERBANG. Penjagaannya di SUMBU X, bukan dengan menahan ketinggian.
+
+   Ruang bebas di halaman pembuka sudah diukur di lima ukuran layar: blok teks
+   menempati x 23-77vw (di desktop hanya 43-57vw), monogram x 35-65vw pada
+   y 21-38vh, dan pohon sakura di luar x 19/81vw pada y 51-88vh. Merpati
+   terbesar 20vw x 13vh di HP - itu kasus yang paling mengikat.
+
+   Dari angka itu keluar dua aturan:
+
+     - Saat merpatinya melintas DI DEPAN blok teks (x sekitar 3-77vw),
+       puncaknya harus di sekitar 5vh atau kurang, supaya bagian bawahnya
+       tetap di atas baris teks pertama.
+     - Saat berada di KORIDOR TEPI (x di bawah 3vw atau di atas 77vw), ia
+       bebas menukik sampai sekitar 38vh: di situ tak ada teks, dan masih di
+       atas tajuk pohon.
+
+   Bentuk jalurnya mengikuti aturan itu: menukik saat masuk, mendaki,
+   menyeberang tinggi, lalu menukik lagi saat keluar.
+
+   Jarak antar keyframe sengaja TIDAK rata. Itu yang membuat lajunya berubah -
+   melambat saat mendaki, meluncur saat menukik - dan itulah yang membuat
+   gerakannya tidak terasa seperti garis lurus. Sudut rotasinya mengikuti arah
+   gerak: hidung turun saat menukik, mendatar saat menyeberang.
+
+   Ketiganya dibuat berbeda supaya tidak terlihat seragam: A menukik di kedua
+   ujung, B mencelup sekali di awal lalu keluar lebih tinggi, C (arah
+   sebaliknya) menyeberang tinggi dulu lalu menukik panjang di ujung kiri.
+
+   TITIK MASUK DAN KELUAR ditulis calc(-100% - 1vw) dan calc(100vw + 1vw),
+   bukan angka vw tetap. Persen di translate mengacu ke UKURAN ELEMENNYA
+   SENDIRI, jadi -100% berarti "tepat di luar tepi kiri" berapa pun lebar
+   merpatinya. Ini penting karena lebar merpati tetap dalam rem: di HP itu
+   sekitar 20vw, di desktop cuma 6vw. Dengan angka vw tetap (dulu -20vw),
+   merpati desktop menghabiskan seperempat siklusnya melayang di luar layar
+   sebelum terlihat - dan itu membuat langit sempat kosong.
 
    BAGIAN YANG TERLIHAT 0-94%, pulangnya 94-100% dan seluruhnya di luar layar.
    Jalur pulang sengaja sesingkat mungkin: ia tak terlihat, sementara tiap
    persen yang dipakai untuk pulang adalah persen yang langitnya kosong.
 
-   Jeda di .dove--a/b/c bukan angka asal. Dengan durasi 26s/34s/30s, jeda
-   -14s/-7s/-26s adalah satu-satunya kelompok yang dicari secara menyeluruh
-   dan memenuhi dua syarat sekaligus: TIDAK PERNAH ada saat tanpa merpati
-   sama sekali (rata-rata 2,83 dari 3 terlihat), dan jarak antar waktu masuk
-   0,328 dari 0,333 yang ideal - jadi ketiganya masuk bergantian, tidak
-   berombongan. Kalau durasinya diubah, jedanya harus dicari ulang. */
+   JEDA -11s/-26s/-2,5s dicari, bukan ditebak. Caranya: pola "terlihat/tidak"
+   tiap merpati diambil dari peramban (disampel 0,5 detik sepanjang siklusnya,
+   di HP dan desktop sekaligus), lalu seluruh 26x34x30 kombinasi jeda diuji
+   terhadap pola itu.
+
+   Hasil pencarian itu juga membuktikan sesuatu yang tidak enak: TIDAK ADA
+   kombinasi yang membuat langit tak pernah kosong. Sebabnya durasi 26/34/30
+   tidak sepadan - siklus gabungannya 6630 detik, dan sepanjang rentang itu
+   semua kombinasi fase terjadi, termasuk saat ketiga celah berbarengan.
+   Jeda terpilih adalah yang kekosongan terpanjangnya paling kecil: 1,5 detik,
+   dan hanya 0,1% dari waktu. Kalau suatu saat ini perlu benar-benar nol,
+   yang harus diubah durasinya - dibuat sepadan, misalnya 24/30/36 detik yang
+   siklus gabungannya hanya 360 detik - lalu jedanya dicari ulang. */
 @keyframes doveCrossA {
-  0%    { transform: translate3d(-18vw, calc(21vh * var(--dove-y)), 0) rotate(-4deg); }
-  24%   { transform: translate3d(16vw, calc(11vh * var(--dove-y)), 0)  rotate(2deg); }
-  48%   { transform: translate3d(50vw, calc(19vh * var(--dove-y)), 0)  rotate(-2deg); }
-  72%   { transform: translate3d(84vw, calc(8vh * var(--dove-y)), 0)   rotate(3deg); }
-  94%   { transform: translate3d(118vw, calc(15vh * var(--dove-y)), 0) rotate(0deg); }
-  95%   { transform: translate3d(118vw, -40vh, 0); }
-  99.5% { transform: translate3d(-18vw, -40vh, 0); }
-  100%  { transform: translate3d(-18vw, calc(21vh * var(--dove-y)), 0) rotate(-4deg); }
+  0%    { transform: translate3d(calc(-100% - 1vw), 33vh, 0) rotate(7deg); }
+  9%    { transform: translate3d(calc(-55%), 24vh, 0)  rotate(3deg); }
+  20%   { transform: translate3d(10vw, 6vh, 0)   rotate(-4deg); }
+  38%   { transform: translate3d(38vw, 3vh, 0)   rotate(-1deg); }
+  56%   { transform: translate3d(64vw, 5vh, 0)   rotate(2deg); }
+  70%   { transform: translate3d(80vw, 14vh, 0)  rotate(6deg); }
+  82%   { transform: translate3d(calc(100vw - 45%), 31vh, 0)  rotate(9deg); }
+  94%   { transform: translate3d(calc(100vw + 1vw), 20vh, 0) rotate(-2deg); }
+  95%   { transform: translate3d(calc(100vw + 1vw), -40vh, 0); }
+  99.5% { transform: translate3d(calc(-100% - 1vw), -40vh, 0); }
+  100%  { transform: translate3d(calc(-100% - 1vw), 33vh, 0) rotate(7deg); }
 }
 @keyframes doveCrossB {
-  0%    { transform: translate3d(-16vw, calc(7vh * var(--dove-y)), 0)  rotate(3deg); }
-  28%   { transform: translate3d(22vw, calc(17vh * var(--dove-y)), 0)  rotate(-3deg); }
-  58%   { transform: translate3d(58vw, calc(5vh * var(--dove-y)), 0)   rotate(2deg); }
-  94%   { transform: translate3d(116vw, calc(14vh * var(--dove-y)), 0) rotate(-1deg); }
-  95%   { transform: translate3d(116vw, -40vh, 0); }
-  99.5% { transform: translate3d(-16vw, -40vh, 0); }
-  100%  { transform: translate3d(-16vw, calc(7vh * var(--dove-y)), 0)  rotate(3deg); }
+  0%    { transform: translate3d(calc(-100% - 1vw), 11vh, 0) rotate(-2deg); }
+  11%   { transform: translate3d(calc(-50%), 29vh, 0)  rotate(8deg); }
+  22%   { transform: translate3d(8vw, 11vh, 0)   rotate(-5deg); }
+  40%   { transform: translate3d(32vw, 4vh, 0)   rotate(-2deg); }
+  58%   { transform: translate3d(56vw, 2vh, 0)   rotate(1deg); }
+  76%   { transform: translate3d(82vw, 9vh, 0)   rotate(4deg); }
+  88%   { transform: translate3d(calc(100vw - 40%), 25vh, 0)  rotate(8deg); }
+  94%   { transform: translate3d(calc(100vw + 1vw), 14vh, 0) rotate(-1deg); }
+  95%   { transform: translate3d(calc(100vw + 1vw), -40vh, 0); }
+  99.5% { transform: translate3d(calc(-100% - 1vw), -40vh, 0); }
+  100%  { transform: translate3d(calc(-100% - 1vw), 11vh, 0) rotate(-2deg); }
 }
 /* Arah sebaliknya: masuk dari kanan, keluar di kiri. */
 @keyframes doveCrossC {
-  0%    { transform: translate3d(114vw, calc(22vh * var(--dove-y)), 0) rotate(3deg); }
-  32%   { transform: translate3d(72vw, calc(13vh * var(--dove-y)), 0)  rotate(-2deg); }
-  64%   { transform: translate3d(34vw, calc(22vh * var(--dove-y)), 0)  rotate(2deg); }
-  94%   { transform: translate3d(-20vw, calc(16vh * var(--dove-y)), 0) rotate(0deg); }
-  95%   { transform: translate3d(-20vw, -40vh, 0); }
-  99.5% { transform: translate3d(114vw, -40vh, 0); }
-  100%  { transform: translate3d(114vw, calc(22vh * var(--dove-y)), 0) rotate(3deg); }
+  0%    { transform: translate3d(calc(100vw + 1vw), 26vh, 0) rotate(-6deg); }
+  10%   { transform: translate3d(calc(100vw - 45%), 33vh, 0) rotate(-9deg); }
+  24%   { transform: translate3d(80vw, 12vh, 0)  rotate(4deg); }
+  42%   { transform: translate3d(56vw, 4vh, 0)   rotate(1deg); }
+  60%   { transform: translate3d(30vw, 3vh, 0)   rotate(-2deg); }
+  74%   { transform: translate3d(8vw, 10vh, 0)   rotate(-6deg); }
+  86%   { transform: translate3d(calc(-55%), 30vh, 0)  rotate(-9deg); }
+  94%   { transform: translate3d(calc(-100% - 1vw), 38vh, 0) rotate(-4deg); }
+  95%   { transform: translate3d(calc(-100% - 1vw), -40vh, 0); }
+  99.5% { transform: translate3d(calc(100vw + 1vw), -40vh, 0); }
+  100%  { transform: translate3d(calc(100vw + 1vw), 26vh, 0) rotate(-6deg); }
 }
 
 /* Hiasan taman di halaman pembuka. clip supaya sudut bunga yang melewati
@@ -2005,11 +2071,6 @@ select.input {
   .deco--bush-l { left: -8rem; }
   .deco--bush-r { right: -8rem; }
   .deco--bed { height: 13rem; }
-  /* Pengali ketinggian TIDAK diubah di sini. Sempat dicoba 1 dan 0.78, dan
-     keduanya membuat merpati terbesar melintas menutupi 18-21% luas logo di
-     tengah siklusnya - karena posisi logo ikut tinggi isi gerbang, yang
-     berbeda-beda tiap ukuran layar. Nilai 0.42 dari blok dasar terukur bersih
-     di 390x745, 1440x900, dan 1920x1080. */
   .dove--a  { width: 7rem; }
   .dove--b  { width: 5.25rem; }
   .dove--c  { width: 4rem; }
@@ -2090,9 +2151,9 @@ select.input {
   /* Merpatinya dihentikan, bukan disembunyikan: hiasannya tetap ada, hanya
      tidak bergerak. */
   .dove, .dove__strip { animation: none; }
-  .dove--a { transform: translate3d(6vw, 18vh, 0); }
-  .dove--b { transform: translate3d(72vw, 9vh, 0); }
-  .dove--c { transform: translate3d(40vw, 21vh, 0); }
+  .dove--a { transform: translate3d(8vw, 20vh, 0); }
+  .dove--b { transform: translate3d(74vw, 8vh, 0); }
+  .dove--c { transform: translate3d(44vw, 4vh, 0); }
   [data-px], [data-px-back], [data-px-cover] {
     animation: none !important;
     opacity: 1 !important;
