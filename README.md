@@ -14,6 +14,8 @@ lib/
   hooks.js       ← nama tamu, hitung mundur, penanda halaman aktif, paralaks
   AudioProvider  ← musik latar (dipakai gerbang + tombol not balok)
   WishesProvider ← ucapan (ditulis RSVP, ditampilkan section Ucapan)
+  rsvpApi.js     ← kirim RSVP / ambil ucapan dari Google Sheets
+google-apps-script/Code.gs ← skrip penerima RSVP, ditempel di Google Sheet
 public/assets/   ← hanya aset yang benar-benar dipakai (4,7 MB)
 ```
 
@@ -53,11 +55,38 @@ dan `?nama=`.
 
 ## Yang perlu diketahui sebelum menyebar undangan
 
-**RSVP tidak terkirim ke mana pun.** Ucapan disimpan di `localStorage`
-peramban tamu itu sendiri, jadi hanya dia yang melihatnya — mempelai tidak
-menerima apa pun. Untuk mengumpulkan konfirmasi sungguhan, sambungkan fungsi
-`kirim()` di `components/Rsvp.jsx` ke layanan luar (Google Form, Formspree,
-atau API sendiri).
+**RSVP baru terkirim setelah `NEXT_PUBLIC_RSVP_ENDPOINT` diisi** (lihat
+bagian berikut). Selama kosong, ucapan hanya disimpan di `localStorage`
+peramban tamu itu sendiri — mempelai tidak menerima apa pun.
+
+## RSVP ke Google Sheets
+
+Tiap kiriman formulir RSVP menjadi satu baris baru di Google Sheet (Waktu,
+Nama, Kehadiran, Jumlah Tamu, Ucapan & Doa), dan section Ucapan & Doa
+menampilkan ucapan dari sheet itu — semua tamu melihat daftar yang sama,
+disegarkan tiap menit.
+
+1. Buat Google Sheet baru (nama bebas).
+2. Di sheet itu: **Extensions → Apps Script**. Hapus isi `Code.gs` bawaan,
+   tempel seluruh isi `google-apps-script/Code.gs` dari repo ini, **Save**.
+3. **Deploy → New deployment**, pilih jenis **Web app**:
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+
+   Klik Deploy, izinkan akses akun Google, lalu salin **Web app URL**
+   (berakhiran `/exec`).
+4. Lokal: salin `.env.example` menjadi `.env.local`, isi
+   `NEXT_PUBLIC_RSVP_ENDPOINT=<URL tadi>`, lalu jalankan ulang `npm run dev`.
+5. Vercel: **Settings → Environment Variables**, tambahkan
+   `NEXT_PUBLIC_RSVP_ENDPOINT` dengan URL yang sama, lalu redeploy.
+   (Variabel `NEXT_PUBLIC_` ditanam saat build, jadi wajib redeploy.)
+
+Sheet "RSVP" dibuat otomatis saat kiriman pertama masuk. Mengubah `Code.gs`
+baru berlaku setelah **Deploy → Manage deployments → edit → Version: New
+version** — URL-nya tetap sama.
+
+Isian yang diawali `=`, `+`, `-`, atau `@` diberi awalan petik oleh skripnya,
+supaya tamu tidak bisa menyisipkan rumus ke dalam sheet.
 
 **Nomor rekening di `lib/data.js` masih contoh** (1234567890 / 0987654321).
 

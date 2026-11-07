@@ -1,8 +1,15 @@
 import { AYAT } from "@/lib/data";
+import LatarFoto from "./LatarFoto";
 
 export default function Verse() {
   return (
     <section className="screen screen--alt screen--center screen--gold" data-screen-label="Ayat">
+      <LatarFoto
+        src="/assets/img/background/bg-5.webp"
+        posisi="22% 50%"
+        srcMobile="/assets/img/background/bg-6.webp"
+        posisiMobile="50% 45%"
+      />
       <div data-px>
         <img
           className="deco deco--swag"

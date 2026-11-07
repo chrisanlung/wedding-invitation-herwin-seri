@@ -2,6 +2,8 @@
    berselang kiri-kanan, dipisah garis tegak di tengah, dengan medali lilin
    di tiap acara dan kilau kecil di antaranya.
 
+   Halaman Lokasi sudah dilebur ke sini: tiap acara punya tombol "Buka Maps".
+
    Bagian ini tetap wajib muat satu layar seperti bagian lain undangan, jadi
    tinggi gambarnya DIPATOK lewat CSS alih-alih mengikuti lebar kolom. Itu
    yang membuat tinggi tiap baris bisa dihitung sejak awal.
@@ -99,8 +101,20 @@ export default function Schedule() {
                 <Seal />
                 <p className="agenda__time">{a.jam} WIB</p>
                 <h3 className="agenda__title">{a.tag}</h3>
+                {a.rincian && <p className="agenda__detail">{a.rincian}</p>}
                 <p className="event__place">{a.tempat}</p>
                 <p className="event__addr">{a.alamat}</p>
+                {/* Tautan, bukan peta tersemat: peta tersemat menangkap sapuan
+                    jari dan bisa menahan gulir halaman satu-layar ini. */}
+                <a
+                  className="btn btn--ghost btn--sm agenda__map"
+                  href={a.maps}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Buka ${a.tempat} di Google Maps`}
+                >
+                  Buka Maps
+                </a>
               </div>
             </li>
           ))}

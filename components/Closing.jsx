@@ -5,7 +5,7 @@ export default function Closing() {
     <section className="screen screen--closing screen--center" data-screen-label="Penutup">
       <div className="media media--fill" aria-hidden="true">
         <div data-px-back className="media__layer">
-          <img src="/assets/img/penutup.svg" alt="" width="900" height="1000" loading="lazy" />
+          <img src="/assets/img/background/bg-7.webp" alt="" width="1600" height="2400" loading="lazy" />
         </div>
       </div>
       <div className="scrim scrim--solid" aria-hidden="true"></div>

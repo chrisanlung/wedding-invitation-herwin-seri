@@ -17,9 +17,7 @@ import Gate from "./Gate";
 import Cover from "./Cover";
 import Verse from "./Verse";
 import Couple from "./Couple";
-import Countdown from "./Countdown";
 import Schedule from "./Schedule";
-import Location from "./Location";
 import Story from "./Story";
 import Gallery from "./Gallery";
 import Rsvp from "./Rsvp";
@@ -42,14 +40,12 @@ export default function Invitation() {
           <Cover />
           <Verse />
           <Couple />
-          <Countdown />
           <Schedule />
-          <Location />
           <Story />
           <Gallery />
           <Rsvp />
-          <Wishes />
           <Gift />
+          <Wishes />
           <Closing />
         </main>
 

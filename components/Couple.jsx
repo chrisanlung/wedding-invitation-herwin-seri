@@ -9,6 +9,7 @@
    besar supaya TINGGI kedua potret sama dan nama di bawahnya tetap sebaris. */
 
 import { MEMPELAI } from "@/lib/data";
+import LatarFoto from "./LatarFoto";
 
 function Orang({ data, sisi, bingkai, bingkaiW, bingkaiH, judul }) {
   return (
@@ -50,6 +51,7 @@ function Orang({ data, sisi, bingkai, bingkaiW, bingkaiH, judul }) {
 export default function Couple() {
   return (
     <section className="screen screen--center screen--gold" data-screen-label="Mempelai">
+      <LatarFoto src="/assets/img/background/bg-2.webp" posisi="40% 50%" />
       <div data-px>
         <p className="eyebrow">Dengan penuh syukur</p>
         <p className="lead">Kami mengundang Anda untuk menjadi bagian dari hari bahagia kami.</p>

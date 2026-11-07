@@ -37,7 +37,7 @@ export default function Gift() {
 
         <div className="stack stack--left">
           {REKENING.map((r) => (
-            <div className="card card--bank" key={r.bank}>
+            <div className="card card--bank" key={r.nomor}>
               <p className="tag">{r.bank}</p>
               <p className="bank__num">{r.nomor}</p>
               <p className="bank__name">{r.atasNama}</p>

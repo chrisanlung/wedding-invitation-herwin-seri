@@ -3,15 +3,16 @@
 /* =========================================================================
    Formulir konfirmasi kehadiran.
 
-   PENTING: isian ini TIDAK terkirim ke mana pun. Ucapannya disimpan di
-   localStorage peramban tamu itu sendiri, jadi mempelai tidak menerimanya.
-   Untuk mengumpulkan RSVP sungguhan, sambungkan `kirim()` di bawah ke
-   layanan luar (Google Form, Formspree, atau API sendiri).
+   Kalau NEXT_PUBLIC_RSVP_ENDPOINT diisi, tiap kiriman menjadi satu baris
+   baru di Google Sheets (lihat lib/rsvpApi.js dan google-apps-script/).
+   Kalau kosong, isiannya TIDAK terkirim ke mana pun - ucapannya hanya
+   disimpan di localStorage peramban tamu itu sendiri.
    ========================================================================= */
 
 import { useEffect, useState } from "react";
 import { useGuestName } from "@/lib/hooks";
 import { useWishes } from "@/lib/WishesProvider";
+import { RSVP_AKTIF, kirimRsvp } from "@/lib/rsvpApi";
 
 export default function Rsvp() {
   const { tambah } = useWishes();
@@ -22,6 +23,7 @@ export default function Rsvp() {
   const [jumlah, setJumlah] = useState("1");
   const [pesan, setPesan] = useState("");
   const [catatan, setCatatan] = useState({ teks: "", salah: false });
+  const [mengirim, setMengirim] = useState(false);
 
   // Nama dari ?to= dipakai sebagai isian awal - tapi jangan menimpa kalau
   // tamunya sudah terlanjur mengetik namanya sendiri.
@@ -29,8 +31,9 @@ export default function Rsvp() {
     if (namaTamu) setNama((lama) => lama || namaTamu);
   }, [namaTamu]);
 
-  function kirim(ev) {
+  async function kirim(ev) {
     ev.preventDefault();
+    if (mengirim) return; // cegah kirim ganda saat jaringan lambat
     const bersih = nama.trim();
 
     if (!bersih) {
@@ -41,6 +44,21 @@ export default function Rsvp() {
     }
 
     const isi = pesan.trim();
+
+    if (RSVP_AKTIF) {
+      setMengirim(true);
+      setCatatan({ teks: "Mengirim…", salah: false });
+      try {
+        await kirimRsvp({ nama: bersih, hadir, jumlah: hadir === "tidak" ? "0" : jumlah, pesan: isi });
+      } catch {
+        // Isian TIDAK dikosongkan, supaya tamu cukup menekan Kirim lagi.
+        setCatatan({ teks: "Maaf, konfirmasi gagal terkirim. Periksa koneksi lalu coba lagi.", salah: true });
+        setMengirim(false);
+        return;
+      }
+      setMengirim(false);
+    }
+
     if (isi) tambah({ name: bersih, message: isi });
 
     setCatatan({ teks: "Terima kasih, konfirmasi Anda sudah kami terima.", salah: false });
@@ -132,8 +150,8 @@ export default function Rsvp() {
             />
           </div>
 
-          <button className="btn btn--solid btn--block" type="submit">
-            Kirim
+          <button className="btn btn--solid btn--block" type="submit" disabled={mengirim}>
+            {mengirim ? "Mengirim…" : "Kirim"}
           </button>
           <p className={`form__note${catatan.salah ? " form__note--error" : ""}`} role="status" aria-live="polite">
             {catatan.teks}

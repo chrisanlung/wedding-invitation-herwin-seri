@@ -39,10 +39,16 @@ const ULANGAN = 5;
 
 import { GALERI } from "@/lib/data";
 
-function Kartu({ foto, salinan }) {
+/* Kemiringan kartu dipilih dari urutannya DI DALAM SET, bukan nth-child di
+   seluruh track. Dengan nth-child(6n+k), jumlah foto yang bukan kelipatan 6
+   membuat set salinan miring berbeda dari set aslinya, dan sambungan loop-nya
+   melompat. Dengan cara ini jumlah foto bebas. */
+const POLA_MIRING = 6;
+
+function Kartu({ foto, salinan, urutan }) {
   return (
     <figure className="gallery__item" aria-hidden={salinan ? "true" : undefined}>
-      <div className="gallery__card">
+      <div className={`gallery__card gallery__card--t${(urutan % POLA_MIRING) + 1}`}>
         <span className="gallery__frame">
           <img src={foto.src} alt={salinan ? "" : foto.alt} width={foto.w} height={foto.h} loading="lazy" />
         </span>
@@ -63,8 +69,8 @@ export default function Gallery() {
         <div className="gallery" role="group" aria-label="Galeri foto">
           <div className="gallery__track">
             {Array.from({ length: ULANGAN }, (_, set) =>
-              GALERI.map((f) => (
-                <Kartu foto={f} salinan={set > 0} key={`${set}-${f.src}`} />
+              GALERI.map((f, i) => (
+                <Kartu foto={f} salinan={set > 0} urutan={i} key={`${set}-${f.src}`} />
               ))
             )}
           </div>

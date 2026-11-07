@@ -47,33 +47,25 @@ export default function Gate() {
 
   return (
     <div className={`gate${menutup ? " is-closing" : ""}`} id="gate" hidden={hilang}>
-      {/* Hiasan taman: pohon sakura kiri-kanan, hamparan bunga, lalu semak. */}
-      <div className="gate__deco" aria-hidden="true">
-        <img className="deco deco--tree deco--tree-l" src="/assets/img/deco/tree-sakura.webp" alt="" width="380" height="404" />
-        <img className="deco deco--tree deco--tree-r" src="/assets/img/deco/tree-sakura.webp" alt="" width="380" height="404" />
-
-        <div className="deco deco--bed"></div>
-
-        <img className="deco deco--bush deco--bush-l" src="/assets/img/deco/bush.webp" alt="" width="560" height="133" />
-        <img className="deco deco--bush deco--bush-r" src="/assets/img/deco/bush.webp" alt="" width="560" height="133" />
-      </div>
-
-      {/* Sesudah .gate__deco, jadi merpatinya melintas DI DEPAN pohon; tetap di
-          belakang .gate__inner yang ber-z-index 1, jadi tak pernah menutupi
-          nama mempelai maupun tombolnya. */}
+      {/* Latar halaman pembuka = foto (lihat .gate di globals.css). Merpatinya
+          tetap di belakang .gate__inner yang ber-z-index 1, jadi tak pernah
+          menutupi nama mempelai maupun tombolnya. */}
       <Doves />
 
       <div className="gate__inner">
         {/* Monogram H&S. alt kosong + aria-hidden: ini pengulangan visual dari
             nama yang tertulis tepat di bawahnya, jadi membacanya lagi hanya
-            menambah kebisingan bagi pembaca layar. */}
+            menambah kebisingan bagi pembaca layar.
+            logo-hs-01.webp dibuat dari logo-hs-01.png (hitam di atas putih,
+            tanpa transparansi): tintanya dijadikan alpha dan diwarnai emas
+            --accent, supaya bisa duduk di atas foto latar. */}
         <img
           className="gate__logo"
-          src="/assets/img/logo-hs-3.webp"
+          src="/assets/img/logo-hs-01.webp"
           alt=""
           aria-hidden="true"
-          width="360"
-          height="360"
+          width="480"
+          height="480"
         />
 
         <p className="eyebrow">Undangan Pernikahan</p>
