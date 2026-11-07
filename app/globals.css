@@ -1047,11 +1047,29 @@ a:hover { color: var(--accent-dk); }
               rgba(26, 20, 16, .14) 72%,
               rgba(26, 20, 16, .06) 100%);
 }
+/* HP: kolomnya ~107px, jadi cerita yang panjang (2024) menumpuk sampai ~80%
+   tinggi kartu. Kerudungnya dipasang setinggi kartu - tipis di puncak - supaya
+   tahun dan judulnya tidak jatuh di bagian foto yang terang. */
+@media (max-width: 759px) {
+  .timeline__item::before {
+    background: linear-gradient(to top,
+                rgba(26, 20, 16, .93) 0%,
+                rgba(26, 20, 16, .88) 50%,
+                rgba(26, 20, 16, .72) 76%,
+                rgba(26, 20, 16, .5) 100%);
+  }
+}
 
 /* Teksnya harus di ATAS kerudung. `position: relative` saja cukup - keduanya
-   sama-sama z-index auto, dan yang belakangan menang. */
+   sama-sama z-index auto, dan yang belakangan menang.
+
+   Bayangan teks: kerudung di atas pekat hanya di sepertiga bawah kartu, tapi
+   cerita yang panjang (di HP kolomnya cuma ~107px) membuat tahun dan judulnya
+   naik sampai ke bagian foto yang terang. Bayangan ini menjaga teks tetap
+   terbaca di mana pun ia jatuh, tanpa harus menggelapkan wajah di foto. */
 .timeline__item > * {
   position: relative;
+  text-shadow: 0 1px 0.375rem rgba(0, 0, 0, .85), 0 0 0.125rem rgba(0, 0, 0, .6);
 }
 .timeline__year {
   margin: 0 0 0.5625rem;
@@ -1621,6 +1639,32 @@ select.input {
 }
 .has-reveal .screen.is-active .timeline__item > *:nth-child(2) { --baris: 80ms; }
 .has-reveal .screen.is-active .timeline__item > *:nth-child(3) { --baris: 160ms; }
+
+/* HP: foto kartu cerita bergeser pelan kiri-kanan SESUDAH putarannya selesai.
+   Di HP kartunya cuma ~107px, jadi hanya sepertiga lebar foto yang terlihat;
+   gerakan ini memperlihatkan bagian yang terpotong bergantian.
+
+   Keyframe-nya sengaja tanpa `from`/`to`: keduanya jatuh ke posisi bawaan
+   tiap kartu (lihat .timeline__item:nth-child(n) di atas), jadi tak ada
+   lompatan - dari posisi semula ke tepi kiri, ke tepi kanan, lalu kembali.
+
+   Jeda awalnya = --spin-end masing-masing kartu, jadi geserannya baru mulai
+   saat kartunya sudah diam. Dua nilai animation-delay: putaran, lalu geser.
+   prefers-reduced-motion mematikannya bersama putaran (lihat blok di bawah). */
+@keyframes storyPan {
+  25% { background-position-x: 0%; }
+  75% { background-position-x: 100%; }
+}
+@media (max-width: 759px) {
+  .has-reveal .screen.is-active .timeline__item {
+    animation:
+      storySpin 1.2s linear both,
+      storyPan 18s ease-in-out infinite;
+  }
+  .has-reveal .screen.is-active .timeline__item:nth-child(1) { animation-delay: 80ms, 1.28s; }
+  .has-reveal .screen.is-active .timeline__item:nth-child(2) { animation-delay: 220ms, 1.42s; }
+  .has-reveal .screen.is-active .timeline__item:nth-child(3) { animation-delay: 360ms, 1.56s; }
+}
 
 /* ============================ SAMPUL PEMBUKA ============================
    Foto penuh layar dengan tabir anggur, tanpa hiasan bunga. */
