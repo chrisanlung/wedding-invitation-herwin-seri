@@ -1,4 +1,4 @@
-/* Halaman pertama: foto di lorong rak perpustakaan (bg-4) sebagai latar, nama mempelai di atasnya.
+/* Halaman pertama: foto Seri & Herwin di tangga perpustakaan (bg-8) sebagai latar, nama mempelai di atasnya.
 
    Foto ini gambar pertama yang dilukis, jadi `fetchPriority="high"` dan TANPA
    loading="lazy" - ia justru harus didahulukan. */
@@ -11,7 +11,7 @@ export default function Cover() {
     <section className="screen screen--cover" data-screen-label="Cover" aria-label="Pembuka">
       <div className="media media--fill" aria-hidden="true">
         <div data-px-back className="media__layer">
-          <img src="/assets/img/background/bg-1.webp" alt="" width="1080" height="720" fetchPriority="high" />
+          <img src="/assets/img/background/bg-8.webp" alt="" width="1600" height="2401" fetchPriority="high" />
         </div>
       </div>
       <div className="scrim scrim--cover" aria-hidden="true"></div>

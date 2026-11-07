@@ -397,12 +397,13 @@ a:hover { color: var(--accent-dk); }
 /* Lapisan teks sampul dibuat setinggi penuh section, supaya rentang
    paralaksnya mencakup seluruh layar pertama - bukan cuma setinggi teksnya.
 
-   Posisi teks mengikuti foto sampul (bg-1, Seri di tangga):
-     - HP: teks di BAWAH. Fotonya dipotong jadi sepotong tegak di sekitar
-       Seri; wajahnya ada di sepertiga atas, sedangkan bawahnya anak tangga
-       kosong. Teks di atas menutupi wajahnya.
-     - Desktop: teks di ATAS (blok 760px), di ruang kosong di antara Seri
-       dan Herwin - di bawah ada Herwin di balkon. */
+   Posisi teks mengikuti foto sampul (bg-8, Seri & Herwin berdampingan di
+   tangga, sekitar 27-55% dari kiri, wajah di ~40% tinggi foto):
+     - HP: teks di BAWAH, di atas ujung gaun dan anak tangga - wajah mereka
+       di tengah layar tetap bebas.
+     - Desktop: teks di KANAN (blok 760px), di atas rak buku. Di layar
+       mendatar fotonya terpotong jadi pita tengah, dan mempelai ada persis
+       di tengahnya - teks di atas ataupun di bawah menabrak mereka. */
 .cover__layer {
   position: absolute;
   inset: 0;
@@ -414,20 +415,18 @@ a:hover { color: var(--accent-dk); }
   padding: 0 1.6875rem 2.6875rem;
 }
 
-/* Foto sampul (bg-1) mendatar: Seri di tangga sekitar 35% dari kiri, Herwin
-   sekitar 55%. Di HP yang tegak hanya sepotong sempit fotonya yang muat.
+/* Foto sampul (bg-8) tegak, mempelai di sekitar 27-55% dari kiri.
 
-   Dua hal supaya KEDUANYA masuk:
-     1. Titik tengahnya di antara mereka (46%), bukan di tengah foto.
-     2. Lapisan paralaks sampul TIDAK dibuat 130% tinggi di HP. Ruang ekstra
-        itu memperbesar foto 1,3x, dan dengan pembesaran itu yang muat cuma
-        ~24% lebar foto - tak cukup untuk Seri dan Herwin sekaligus. Setinggi
-        layar pas, yang muat ~31% (sekitar 30-61% dari kiri). Akibatnya
-        paralaks foto sampul dimatikan di HP: tanpa ruang ekstra, geserannya
-        akan memperlihatkan celah. (!important mengalahkan transform inline
-        dari useParallaxFallback di peramban lama.)
-   Hanya di bawah 760px; di desktop fotonya hampir utuh dan paralaksnya
-   tetap jalan seperti section lain. */
+   Di HP:
+     1. Titik tengahnya di tengah pasangan (41%), bukan di tengah foto.
+     2. Lapisan paralaks sampul TIDAK dibuat 130% tinggi. Ruang ekstra itu
+        memperbesar foto 1,3x dan memotong lebih banyak kiri-kanannya;
+        setinggi layar pas, keduanya masuk dengan lega. Akibatnya paralaks
+        foto sampul dimatikan di HP: tanpa ruang ekstra, geserannya akan
+        memperlihatkan celah. (!important mengalahkan transform inline dari
+        useParallaxFallback di peramban lama.)
+   Hanya di bawah 760px; di desktop paralaksnya tetap jalan seperti section
+   lain. */
 @media (max-width: 759px) {
   .screen--cover .media__layer {
     top: 0;
@@ -435,7 +434,7 @@ a:hover { color: var(--accent-dk); }
     animation: none;
     transform: none !important;
   }
-  .screen--cover .media__layer img { object-position: 46% 50%; }
+  .screen--cover .media__layer img { object-position: 41% 50%; }
 }
 
 /* Teks penutup di ATAS, bukan di tengah: di foto latarnya (bg-7) mempelai
@@ -1994,13 +1993,17 @@ select.input {
   .head { margin-bottom: 2.25rem; }
 
   .screen--gallery { padding-inline: 3.1875rem; }
-  .cover__layer    { justify-content: flex-start; padding: 4.5rem 4rem 0; }
+  /* Teks sampul di kanan (lihat catatan .cover__layer); kerudungnya ikut:
+     pekat di kanan, bening di kiri tempat mempelai berdiri. Foto digeser
+     sedikit ke bawah (40%) supaya wajah mereka tak terlalu dekat tepi atas. */
+  .cover__layer    { justify-content: center; align-items: flex-end; padding: 0 6rem 0 0; }
+  .screen--cover .media__layer img { object-position: 50% 40%; }
   .scrim--cover {
-    background: linear-gradient(to bottom,
-      rgba(46, 39, 32, .62) 0%,
-      rgba(46, 39, 32, .4) 40%,
-      rgba(46, 39, 32, .08) 70%,
-      rgba(46, 39, 32, .2) 100%);
+    background: linear-gradient(to left,
+      rgba(46, 39, 32, .7) 0%,
+      rgba(46, 39, 32, .5) 30%,
+      rgba(46, 39, 32, .08) 55%,
+      rgba(46, 39, 32, .05) 100%);
   }
 
   /* Tipografi naik satu tingkat supaya tidak tenggelam di layar lebar. */
