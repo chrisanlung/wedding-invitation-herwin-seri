@@ -437,18 +437,17 @@ a:hover { color: var(--accent-dk); }
   .screen--cover .media__layer img { object-position: 41% 50%; }
 }
 
-/* Teks penutup di ATAS, bukan di tengah: di foto latarnya (bg-7) mempelai
-   berdiri di tengah tangga, persis di tengah layar. Bagian atas foto anak
-   tangga dan dinding kosong.
-   Di HP fotonya digeser ke kiri (30%) supaya mempelai - yang berdiri di
-   sepertiga kiri foto - masuk layar; di desktop fotonya terlihat hampir
-   selebar aslinya, jadi kembali ke tengah. */
+/* Teks penutup di ATAS, bukan di tengah: di foto latarnya (bg-9) mempelai
+   bersandar di pagar balkon, sedikit di bawah tengah layar. Bagian atas
+   fotonya dinding kayu dan lampu - kosong.
+   Di HP titik potongnya 48%, tengah pasangan (sekitar 33-65% dari kiri);
+   di desktop fotonya terlihat hampir selebar aslinya, jadi 50%. */
 .screen--closing {
   padding-block: 3.25rem;
   color: var(--on-dark);
   justify-content: flex-start;
 }
-.screen--closing .media__layer img { object-position: 30% 50%; }
+.screen--closing .media__layer img { object-position: 48% 50%; }
 .screen--gallery { padding-inline: 1.25rem; }
 
 .screen__body { position: relative; }
@@ -493,7 +492,7 @@ a:hover { color: var(--accent-dk); }
     rgba(46, 39, 32, .08) 62%,
     rgba(46, 39, 32, .15) 100%);
 }
-/* Satu-satunya pemakai: Penutup (foto bg-7, mempelai di tangga
+/* Satu-satunya pemakai: Penutup (foto bg-9, mempelai di balkon
    perpustakaan). Teksnya di atas (lihat .screen--closing), mempelai di
    tengah-bawah - jadi pekat di atas, memudar ke bawah supaya mereka tetap
    terang. */
